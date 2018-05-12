@@ -1,4 +1,4 @@
-package main
+package shell
 
 import (
 	"bufio"
@@ -18,7 +18,8 @@ type Shell struct {
 	//stderr io.ReadCloser
 }
 
-func startShell() (Shell, error) {
+// StartShell starts a shell as a background process
+func StartShell() (Shell, error) {
 	shell := "/bin/sh"
 	cmd := exec.Command(shell)
 	stdin, err := cmd.StdinPipe()
@@ -36,7 +37,7 @@ func startShell() (Shell, error) {
 	return Shell{cmd, stdin, stdout}, nil
 }
 
-func (shell *Shell) executeCommand(command string) ([]string, int, error) {
+func (shell *Shell) ExecuteCommand(command string) ([]string, int, error) {
 	const (
 		beginMarker = ">>>>>>>>>>SHELLDOC_MARKER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		endMarker   = "<<<<<<<<<<SHELLDOC_MARKER"
@@ -80,7 +81,8 @@ func (shell *Shell) executeCommand(command string) ([]string, int, error) {
 	return output, rc, nil
 }
 
-func (shell *Shell) exit() error {
+// Exit tells a running shell to exit and waits for it
+func (shell *Shell) Exit() error {
 	io.WriteString(shell.stdin, "exit\n")
 	return shell.cmd.Wait()
 }
