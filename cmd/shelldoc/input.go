@@ -19,13 +19,12 @@ func ReadInput(args []string) ([]byte, error) {
 			result = append(result, content[:]...)
 		}
 		return result, nil
-	} else {
-		result, err := ioutil.ReadAll(os.Stdin)
-		if err != nil {
-			if err != nil {
-				return nil, fmt.Errorf("unable to read from stdin: %v", err)
-			}
-		}
-		return result, nil
 	}
+	result, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		if err != nil {
+			return nil, fmt.Errorf("unable to read from stdin: %v", err)
+		}
+	}
+	return result, nil
 }
