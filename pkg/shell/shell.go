@@ -15,7 +15,6 @@ type Shell struct {
 	cmd    *exec.Cmd
 	stdin  io.WriteCloser
 	stdout io.ReadCloser
-	//stderr io.ReadCloser
 }
 
 // StartShell starts a shell as a background process
@@ -37,6 +36,7 @@ func StartShell() (Shell, error) {
 	return Shell{cmd, stdin, stdout}, nil
 }
 
+// ExecuteCommand runs a command in the shell and returns its output and exit code
 func (shell *Shell) ExecuteCommand(command string) ([]string, int, error) {
 	const (
 		beginMarker = ">>>>>>>>>>SHELLDOC_MARKER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
