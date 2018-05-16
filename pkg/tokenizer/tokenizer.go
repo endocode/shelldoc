@@ -2,6 +2,7 @@ package tokenizer
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	"gopkg.in/russross/blackfriday.v2"
@@ -17,15 +18,44 @@ type Visitor struct {
 
 // Interaction represents one interaction with the shell
 type Interaction struct {
-	Cmd              string
-	Response         string
-	AlternativeRegEx string
+	Cmd      string
+	Response []string
+	//AlternativeRegEx string
 }
 
 // ParseInteractions parses the interactions in a code block and adds them to the Visitor
 func ParseInteractions(visitor *Visitor, node *blackfriday.Node) blackfriday.WalkStatus {
+	cmdEx := "^[\\$>]\\s+(.+)$"
+	cmdRx := regexp.MustCompile(cmdEx)
+
 	lines := strings.Split(string(node.Literal), "\n")
-	fmt.Printf("node: %s - %s.\n", node.Type, lines)
+	var interaction *Interaction
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if len(line) == 0 {
+			continue
+		}
+		//fmt.Printf("%4d: %s\n", counter, line)
+		match := cmdRx.FindStringSubmatch(line)
+		if len(match) > 1 {
+			// begin a new command
+			if interaction != nil {
+				visitor.Interactions = append(visitor.Interactions, *interaction)
+			}
+			interaction = new(Interaction)
+			cmd := match[1]
+			interaction.Cmd = cmd
+		} else {
+			if interaction == nil {
+				fmt.Printf("Skipping line since there was no command: %s", line)
+				continue
+			}
+			interaction.Response = append(interaction.Response, line)
+		}
+	}
+	if interaction != nil {
+		visitor.Interactions = append(visitor.Interactions, *interaction)
+	}
 	return blackfriday.GoToNext
 }
 
@@ -47,7 +77,7 @@ func (visitor *Visitor) visit(node *blackfriday.Node, entering bool) blackfriday
 }
 
 // Tokenize parses the data and calls the event handlers on visitor
-func Tokenize(data []byte, visitor Visitor) error {
+func Tokenize(data []byte, visitor *Visitor) error {
 	md := blackfriday.New()
 	om := md.Parse(data)
 	om.Walk(visitor.visit)

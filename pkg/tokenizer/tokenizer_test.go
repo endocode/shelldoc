@@ -19,6 +19,14 @@ func TestEchoTrue(t *testing.T) {
 	require.NoError(t, err, "Unable to read sample data file")
 	visitor := Visitor{codeBlockHandler, nil}
 	require.Zero(t, echoTrueCodeBlockCount, "Starting the counter")
-	Tokenize(data, visitor)
+	Tokenize(data, &visitor)
 	require.Equal(t, echoTrueCodeBlockCount, 1, "There is one code block element in the sample file")
+}
+
+func TestTokenizeEchoTrue(t *testing.T) {
+	data, err := ioutil.ReadFile("samples/echotrue.md")
+	require.NoError(t, err, "Unable to read sample data file")
+	visitor := NewInteractionVisitor()
+	Tokenize(data, visitor)
+	require.Equal(t, len(visitor.Interactions), 1, "There is one code block element in the sample file")
 }
