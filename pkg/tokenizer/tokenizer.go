@@ -13,7 +13,7 @@ type Visitor struct {
 	// Assign a function that will be called when a code block is encountered
 	CodeBlock func(visitor *Visitor, node *blackfriday.Node) blackfriday.WalkStatus
 	// After parsing, Interactions will hold the shell interactions found in the file
-	Interactions []Interaction
+	Interactions []*Interaction
 }
 
 // Interaction represents one interaction with the shell
@@ -39,10 +39,8 @@ func ParseInteractions(visitor *Visitor, node *blackfriday.Node) blackfriday.Wal
 		match := cmdRx.FindStringSubmatch(line)
 		if len(match) > 1 {
 			// begin a new command
-			if interaction != nil {
-				visitor.Interactions = append(visitor.Interactions, *interaction)
-			}
 			interaction = new(Interaction)
+			visitor.Interactions = append(visitor.Interactions, interaction)
 			cmd := match[1]
 			interaction.Cmd = cmd
 		} else {
@@ -52,9 +50,6 @@ func ParseInteractions(visitor *Visitor, node *blackfriday.Node) blackfriday.Wal
 			}
 			interaction.Response = append(interaction.Response, line)
 		}
-	}
-	if interaction != nil {
-		visitor.Interactions = append(visitor.Interactions, *interaction)
 	}
 	return blackfriday.GoToNext
 }
