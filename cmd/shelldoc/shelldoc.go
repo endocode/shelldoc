@@ -32,8 +32,11 @@ func main() {
 	defer shell.Exit()
 	// execute the interactions and verify the results:
 	for index, interaction := range visitor.Interactions {
-		log.Printf("[%2d]: %s\n", index, interaction.Cmd)
-		log.Printf("=--> : %s", interaction.Cmd)
-		log.Printf("<--= : PASS (%s)", "regex match")
+		log.Printf("[%2d]: %s\n", index, interaction.Describe())
+		log.Printf("--> : %s", interaction.Cmd)
+		if err := interaction.Execute(&shell); err != nil {
+			log.Printf("--    ERROR: %v", err)
+		}
+		log.Printf("<-- : %s", interaction.Result())
 	}
 }

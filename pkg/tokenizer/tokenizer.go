@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/Endocode/shelldoc/pkg/interaction"
 	"gopkg.in/russross/blackfriday.v2"
 )
 
@@ -13,14 +14,7 @@ type Visitor struct {
 	// Assign a function that will be called when a code block is encountered
 	CodeBlock func(visitor *Visitor, node *blackfriday.Node) blackfriday.WalkStatus
 	// After parsing, Interactions will hold the shell interactions found in the file
-	Interactions []*Interaction
-}
-
-// Interaction represents one interaction with the shell
-type Interaction struct {
-	Cmd      string
-	Response []string
-	//AlternativeRegEx string
+	Interactions []*interaction.Interaction
 }
 
 // ParseInteractions parses the interactions in a code block and adds them to the Visitor
@@ -29,7 +23,7 @@ func ParseInteractions(visitor *Visitor, node *blackfriday.Node) blackfriday.Wal
 	cmdRx := regexp.MustCompile(cmdEx)
 
 	lines := strings.Split(string(node.Literal), "\n")
-	var interaction *Interaction
+	var current *interaction.Interaction
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if len(line) == 0 {
@@ -39,16 +33,16 @@ func ParseInteractions(visitor *Visitor, node *blackfriday.Node) blackfriday.Wal
 		match := cmdRx.FindStringSubmatch(line)
 		if len(match) > 1 {
 			// begin a new command
-			interaction = new(Interaction)
-			visitor.Interactions = append(visitor.Interactions, interaction)
+			current = new(interaction.Interaction)
+			visitor.Interactions = append(visitor.Interactions, current)
 			cmd := match[1]
-			interaction.Cmd = cmd
+			current.Cmd = cmd
 		} else {
-			if interaction == nil {
+			if current == nil {
 				fmt.Printf("Skipping line since there was no command: %s", line)
 				continue
 			}
-			interaction.Response = append(interaction.Response, line)
+			current.Response = append(current.Response, line)
 		}
 	}
 	return blackfriday.GoToNext
