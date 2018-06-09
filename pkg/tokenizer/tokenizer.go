@@ -39,7 +39,7 @@ func ParseInteractions(visitor *Visitor, node *blackfriday.Node) blackfriday.Wal
 			current.Cmd = cmd
 		} else {
 			if current == nil {
-				fmt.Printf("Skipping line since there was no command: %s", line)
+				fmt.Printf("Skipping line since there was no command: %s\n", line)
 				continue
 			}
 			current.Response = append(current.Response, line)

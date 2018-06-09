@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -8,13 +9,29 @@ import (
 	"github.com/Endocode/shelldoc/pkg/tokenizer"
 )
 
-// func visitor(node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
-// 	fmt.Printf("node: %s - %s - entering: %v.\n", node.Type, node.Literal, entering)
-// 	if node.Type == blackfriday.CodeBlock {
-// 		// fmt.Printf("node: %s - %s - entering: %v.\n", node.Type, node.Literal, entering)
-// 	}
-// 	return blackfriday.GoToNext
-// }
+const (
+	returnSuccess = iota
+	returnFailure
+	returnError
+)
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func result(code int) string {
+	switch code {
+	case returnFailure:
+		return "FAILURE"
+	case returnError:
+		return "ERROR"
+	default:
+		return "SUCCESS"
+	}
+}
 
 func main() {
 	data, err := ReadInput(os.Args[1:])
@@ -30,13 +47,29 @@ func main() {
 		log.Fatalln(err)
 	}
 	defer shell.Exit()
+	returncode := returnSuccess
+	testCount := 0
+	successCount := 0
+	failureCount := 0
+	errorCount := 0
 	// execute the interactions and verify the results:
 	for index, interaction := range visitor.Interactions {
-		log.Printf("[%2d]: %s\n", index, interaction.Describe())
-		log.Printf("--> : %s", interaction.Cmd)
+		testCount++
+		fmt.Printf("COMMAND (%d): %s\n", index+1, interaction.Describe())
+		fmt.Printf("--> %s\n", interaction.Cmd)
 		if err := interaction.Execute(&shell); err != nil {
-			log.Printf("--    ERROR: %v", err)
+			fmt.Printf("--  ERROR: %v\n", err)
+			returncode = max(returncode, returnError)
+			errorCount++
 		}
-		log.Printf("<-- : %s", interaction.Result())
+		fmt.Printf("<-- %s\n", interaction.Result())
+		if interaction.HasFailure() {
+			returncode = max(returncode, returnFailure)
+			failureCount++
+		} else {
+			successCount++
+		}
 	}
+	fmt.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(returncode), testCount, successCount, failureCount, errorCount)
+	os.Exit(returncode)
 }
