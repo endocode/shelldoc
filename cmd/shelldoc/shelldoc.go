@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	golog "log"
+	"log"
 	"os"
 
 	"github.com/Endocode/shelldoc/pkg/shell"
@@ -27,9 +27,7 @@ type Options struct {
 var (
 	options Options
 	// Debug receives log messages in verbose mode
-	Debug *golog.Logger
-	// Log is the standard logger
-	Log *golog.Logger
+	Debug *log.Logger
 )
 
 func max(a, b int) int {
@@ -56,16 +54,22 @@ type resultStats struct {
 
 func initializeLogging() {
 	if options.verbose {
-		Debug = golog.New(os.Stderr, "", 0)
+		Debug = log.New(os.Stderr, "", 0)
 	} else {
-		Debug = golog.New(ioutil.Discard, "", 0)
+		Debug = log.New(ioutil.Discard, "", 0)
 	}
-	Log = golog.New(os.Stderr, "", 0)
 }
 
-func performInteractions(inputfiles []string, shell *shell.Shell) (resultStats, error) {
+func performInteractions(inputfile string) (resultStats, error) {
+	// start a background shell, it will run until the function ends
+	shell, err := shell.StartShell()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer shell.Exit()
+
 	// read input data
-	data, err := ReadInput(inputfiles)
+	data, err := ReadInput([]string{inputfile})
 	if err != nil {
 		return resultStats{}, fmt.Errorf("unable to read input data: %v", err)
 	}
@@ -74,17 +78,26 @@ func performInteractions(inputfiles []string, shell *shell.Shell) (resultStats, 
 	tokenizer.Tokenize(data, visitor)
 
 	// execute the interactions and verify the results:
+	fmt.Printf("SHELLDOC: doc-testing \"%s\" ...\n", inputfile)
 	results := resultStats{returnSuccess, 0, 0, 0, 0}
 	for index, interaction := range visitor.Interactions {
 		results.testCount++
-		Log.Printf("COMMAND (%d): %s\n", index+1, interaction.Describe())
-		Debug.Printf("--> %s\n", interaction.Cmd)
-		if err := interaction.Execute(shell); err != nil {
-			Log.Printf("--  ERROR: %v\n", err)
+		if options.verbose {
+			fmt.Printf(" COMMAND (%d): %s\n", index+1, interaction.Describe())
+		} else {
+			fmt.Printf(" COMMAND (%d): %s ... ", index+1, interaction.Describe())
+		}
+		Debug.Printf(" --> %s\n", interaction.Cmd)
+		if err := interaction.Execute(&shell); err != nil {
+			fmt.Printf(" --  ERROR: %v", err)
 			results.returncode = max(results.returncode, returnError)
 			results.errorCount++
 		}
-		Debug.Printf("<-- %s\n", interaction.Result())
+		if options.verbose {
+			fmt.Printf("<-- %s\n", interaction.Result())
+		} else {
+			fmt.Printf("%s\n", interaction.Result())
+		}
 		if interaction.HasFailure() {
 			results.returncode = max(results.returncode, returnFailure)
 			results.failureCount++
@@ -92,6 +105,7 @@ func performInteractions(inputfiles []string, shell *shell.Shell) (resultStats, 
 			results.successCount++
 		}
 	}
+	fmt.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(results.returncode), results.testCount, results.successCount, results.failureCount, results.errorCount)
 	return results, nil
 }
 
@@ -101,17 +115,13 @@ func main() {
 	pflag.Parse()
 	initializeLogging()
 	args := pflag.Args()
-	// start a background shell, it will run until the program ends
-	shell, err := shell.StartShell()
-	if err != nil {
-		Log.Fatalln(err)
+	returnCode := returnSuccess
+	for _, file := range args {
+		results, err := performInteractions(file)
+		if err != nil {
+			log.Fatalf("%v", err)
+		}
+		returnCode = max(results.returncode, returnCode)
 	}
-	defer shell.Exit()
-
-	results, err := performInteractions(args, &shell)
-	if err != nil {
-		Log.Fatalf("%v", err)
-	}
-	Log.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(results.returncode), results.testCount, results.successCount, results.failureCount, results.errorCount)
-	os.Exit(results.returncode)
+	os.Exit(returnCode)
 }
