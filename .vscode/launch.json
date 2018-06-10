@@ -20,14 +20,22 @@
             "program": "${workspaceRoot}/cmd/shelldoc/",
             "args": ["-v", "/Users/miroslav/Go/src/github.com/QMSTR/qmstr/README.md"],
         },
-    {
+        {
+            "name": "Start with fenced.md",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceRoot}/cmd/shelldoc/",
+            "args": ["-v", "../../pkg/tokenizer/samples/fenced.md"],
+        },
+        {
         "name": "Start with README",
         "type": "go",
         "request": "launch",
         "mode": "debug",
         "program": "${workspaceRoot}/cmd/shelldoc/",
         "args": ["../../README.md"],
-    },
+        },
         {
             "name": "Launch",
             "type": "go",

@@ -59,6 +59,8 @@ func NewInteractionVisitor() *Visitor {
 func (visitor *Visitor) visit(node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
 	if node.Type == blackfriday.CodeBlock && entering == true {
 		return visitor.CodeBlock(visitor, node)
+	} else if node.Type == blackfriday.Code && entering == true {
+		log.Printf("TODO: handle code nodes")
 	}
 	return blackfriday.GoToNext
 }
