@@ -57,11 +57,18 @@ func initializeLogging() {
 		log.SetOutput(ioutil.Discard)
 	}
 	log.SetFlags(0)
+	log.SetPrefix("Note: ")
 }
 
 func performInteractions(inputfile string) (resultStats, error) {
+	// detect shell
+	shellpath, err := shell.DetectShell(options.shell)
+	if err != nil {
+		return resultStats{}, err
+	}
+
 	// start a background shell, it will run until the function ends
-	shell, err := shell.StartShell()
+	shell, err := shell.StartShell(shellpath)
 	if err != nil {
 		return resultStats{}, fmt.Errorf("unable to start shell: %v", err)
 	}
@@ -95,7 +102,9 @@ func performInteractions(inputfile string) (resultStats, error) {
 		results.testCount++
 		fmt.Printf(opener, fmt.Sprintf("(%d)", index+1), interaction.Describe())
 
-		log.Printf(" --> %s\n", interaction.Cmd)
+		if options.verbose {
+			fmt.Printf(" --> %s\n", interaction.Cmd)
+		}
 		if err := interaction.Execute(&shell); err != nil {
 			fmt.Printf(" --  ERROR: %v", err)
 			results.returncode = max(results.returncode, returnError)
@@ -114,7 +123,7 @@ func performInteractions(inputfile string) (resultStats, error) {
 }
 
 func main() {
-	pflag.StringVarP(&options.shell, "shell", "s", "", "The shell to invoke (default: the user's shell).")
+	pflag.StringVarP(&options.shell, "shell", "s", "", "The shell to invoke (default: $SHELL).")
 	pflag.BoolVarP(&options.verbose, "verbose", "v", false, "Enable diagnostic log output.")
 	pflag.Parse()
 	initializeLogging()

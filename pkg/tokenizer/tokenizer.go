@@ -38,7 +38,7 @@ func ParseInteractions(visitor *Visitor, node *blackfriday.Node) blackfriday.Wal
 			current.Cmd = cmd
 		} else {
 			if current == nil {
-				log.Printf("Note: no trigger prefix ($ or >), skipping: %s\n", line)
+				log.Printf("no trigger prefix ($ or >), skipping: %s\n", line)
 				continue
 			}
 			current.Response = append(current.Response, line)

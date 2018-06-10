@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -17,9 +19,23 @@ type Shell struct {
 	stdout io.ReadCloser
 }
 
+// DetectShell returns the path to the selected shell or the content of $SHELL
+func DetectShell(selected string) (string, error) {
+	if len(selected) > 0 {
+		// accept what the user said
+		log.Printf("Using user-specified shell %s.", selected)
+	} else {
+		selected = os.Getenv("SHELL")
+		log.Printf("Using shell %s (according to $SHELL).", selected)
+	}
+	if _, err := os.Stat(selected); os.IsNotExist(err) {
+		return "", fmt.Errorf("the selected shell does not exist: %v", err)
+	}
+	return selected, nil
+}
+
 // StartShell starts a shell as a background process
-func StartShell() (Shell, error) {
-	shell := "/bin/sh"
+func StartShell(shell string) (Shell, error) {
 	cmd := exec.Command(shell)
 	stdin, err := cmd.StdinPipe()
 	if err != nil {

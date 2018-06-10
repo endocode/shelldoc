@@ -2,14 +2,21 @@ package shell
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
+var shellpath string
+
+func TestMain(m *testing.M) {
+	shellpath, _ = DetectShell("")
+	os.Exit(m.Run())
+}
 func TestShellLifeCycle(t *testing.T) {
 	// The most basic test, start a shell and exit it again
-	shell, err := StartShell()
+	shell, err := StartShell(shellpath)
 	require.NoError(t, err, "Starting a shell should work")
 	require.NoError(t, shell.Exit(), "Exiting ad running shell should work")
 }
@@ -17,7 +24,7 @@ func TestShellLifeCycle(t *testing.T) {
 func TestShellLifeCycleRepeated(t *testing.T) {
 	// Can the program start and stop a shell repeatedly?
 	for counter := 0; counter < 16; counter++ {
-		shell, err := StartShell()
+		shell, err := StartShell(shellpath)
 		require.NoError(t, err, "Starting a shell should work")
 		require.NoError(t, shell.Exit(), "Exiting ad running shell should work")
 	}
@@ -25,7 +32,7 @@ func TestShellLifeCycleRepeated(t *testing.T) {
 
 func TestReturnCodes(t *testing.T) {
 	// Does the shell report return codes corrrectly?
-	shell, err := StartShell()
+	shell, err := StartShell(shellpath)
 	require.NoError(t, err, "Starting a shell should work")
 	defer shell.Exit()
 	{
@@ -44,7 +51,7 @@ func TestReturnCodes(t *testing.T) {
 
 func TestCaptureOutput(t *testing.T) {
 	// Does the shell capture and return the lines printed by the command correctly?
-	shell, err := StartShell()
+	shell, err := StartShell(shellpath)
 	require.NoError(t, err, "Starting a shell should work")
 	defer shell.Exit()
 	{
