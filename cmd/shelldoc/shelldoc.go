@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"os"
 
 	"github.com/Endocode/shelldoc/pkg/shell"
@@ -24,13 +25,9 @@ type Options struct {
 }
 
 // global variables
-var (
-	options Options
-	// Debug receives log messages in verbose mode
-	Debug *log.Logger
-)
+var options Options
 
-func max(a, b int) int {
+func max(a, b int) int { // really, golang?
 	if a > b {
 		return a
 	}
@@ -53,18 +50,20 @@ type resultStats struct {
 }
 
 func initializeLogging() {
+	// verbose essentially enables or disables log output:
 	if options.verbose {
-		Debug = log.New(os.Stderr, "", 0)
+		log.SetOutput(os.Stderr)
 	} else {
-		Debug = log.New(ioutil.Discard, "", 0)
+		log.SetOutput(ioutil.Discard)
 	}
+	log.SetFlags(0)
 }
 
 func performInteractions(inputfile string) (resultStats, error) {
 	// start a background shell, it will run until the function ends
 	shell, err := shell.StartShell()
 	if err != nil {
-		log.Fatalln(err)
+		return resultStats{}, fmt.Errorf("unable to start shell: %v", err)
 	}
 	defer shell.Exit()
 
@@ -80,24 +79,29 @@ func performInteractions(inputfile string) (resultStats, error) {
 	// execute the interactions and verify the results:
 	fmt.Printf("SHELLDOC: doc-testing \"%s\" ...\n", inputfile)
 	results := resultStats{returnSuccess, 0, 0, 0, 0}
+	// construct the opener and closer format strings, since they depend on verbose mode
+	magnitude := int(math.Log10(float64(len(visitor.Interactions)))) + 1
+	openerLineEnding := "  : "
+	resultString := " "
+	if options.verbose {
+		openerLineEnding = "\n"
+		resultString = " <-- "
+	}
+	counterFormat := fmt.Sprintf("%%%ds", magnitude+2)
+	opener := fmt.Sprintf(" CMD %s: %%s%s", counterFormat, openerLineEnding)
+	closer := fmt.Sprintf("%s%%s\n", resultString)
+
 	for index, interaction := range visitor.Interactions {
 		results.testCount++
-		if options.verbose {
-			fmt.Printf(" COMMAND (%d): %s\n", index+1, interaction.Describe())
-		} else {
-			fmt.Printf(" COMMAND (%d): %s ... ", index+1, interaction.Describe())
-		}
-		Debug.Printf(" --> %s\n", interaction.Cmd)
+		fmt.Printf(opener, fmt.Sprintf("(%d)", index+1), interaction.Describe())
+
+		log.Printf(" --> %s\n", interaction.Cmd)
 		if err := interaction.Execute(&shell); err != nil {
 			fmt.Printf(" --  ERROR: %v", err)
 			results.returncode = max(results.returncode, returnError)
 			results.errorCount++
 		}
-		if options.verbose {
-			fmt.Printf("<-- %s\n", interaction.Result())
-		} else {
-			fmt.Printf("%s\n", interaction.Result())
-		}
+		fmt.Printf(closer, interaction.Result())
 		if interaction.HasFailure() {
 			results.returncode = max(results.returncode, returnFailure)
 			results.failureCount++
@@ -119,7 +123,8 @@ func main() {
 	for _, file := range args {
 		results, err := performInteractions(file)
 		if err != nil {
-			log.Fatalf("%v", err)
+			fmt.Println(err) // log may be disabled (see "verbose")
+			os.Exit(returnError)
 		}
 		returnCode = max(results.returncode, returnCode)
 	}

@@ -67,7 +67,6 @@ func (shell *Shell) ExecuteCommand(command string) ([]string, int, error) {
 			continue
 		}
 		match := endRx.FindStringSubmatch(line)
-		//fmt.Println(line, match)
 		if len(match) > 1 {
 			value, err := strconv.Atoi(match[1])
 			if err != nil {

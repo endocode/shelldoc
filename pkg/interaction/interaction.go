@@ -40,17 +40,19 @@ type Interaction struct {
 
 // Describe returns a human-readable description of the interaction
 func (interaction *Interaction) Describe() string {
-	const elideAt = 30
-	if len(interaction.Caption) == 0 {
-		expect := elideString(strings.Join(interaction.Response, ", "), elideAt)
-		if len(expect) == 0 {
-			expect = "(no response expected)"
-		} else {
-			expect = fmt.Sprintf("(expecting \"%s\")", expect)
-		}
-		return fmt.Sprintf("command \"%s\" %s", elideString(interaction.Cmd, elideAt), expect)
+	const elideCmdAt = 40
+	const elideResponseAt = 25
+	format := fmt.Sprintf("%%-%ds  ?  %%-%ds", elideCmdAt, elideResponseAt)
+	name := interaction.Cmd
+	if len(interaction.Caption) != 0 {
+		name = interaction.Caption
 	}
-	return interaction.Caption
+	expect := elideString(strings.Join(interaction.Response, ", "), elideResponseAt)
+	if len(expect) == 0 {
+		expect = "(no response expected)"
+	}
+	result := fmt.Sprintf(format, elideString(name, elideCmdAt), expect)
+	return result
 }
 
 // Result returns a human readable description of the result of the interaction
@@ -69,8 +71,11 @@ func (interaction *Interaction) Result() string {
 		return "PASS (regex match)"
 	case ResultMismatch:
 		return "FAIL (mismatch)"
+	case ResultError:
+		return "FAIL (execution failed)"
+	default:
+		return "YOU FOUND A BUG!!11!1!"
 	}
-	return "WTF"
 }
 
 // HasFailure returns true if the interaction failed (not on execution errors)

@@ -1,7 +1,7 @@
 package tokenizer
 
 import (
-	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
@@ -29,7 +29,6 @@ func ParseInteractions(visitor *Visitor, node *blackfriday.Node) blackfriday.Wal
 		if len(line) == 0 {
 			continue
 		}
-		//fmt.Printf("%4d: %s\n", counter, line)
 		match := cmdRx.FindStringSubmatch(line)
 		if len(match) > 1 {
 			// begin a new command
@@ -39,7 +38,7 @@ func ParseInteractions(visitor *Visitor, node *blackfriday.Node) blackfriday.Wal
 			current.Cmd = cmd
 		} else {
 			if current == nil {
-				fmt.Printf("Skipping line since there was no command: %s\n", line)
+				log.Printf("Note: no trigger prefix ($ or >), skipping: %s\n", line)
 				continue
 			}
 			current.Response = append(current.Response, line)
@@ -58,7 +57,6 @@ func NewInteractionVisitor() *Visitor {
 // visit is called on every Markdown element encountered
 // It checks for code blocks and calls the respective handlers.
 func (visitor *Visitor) visit(node *blackfriday.Node, entering bool) blackfriday.WalkStatus {
-	//fmt.Printf("node: %s - %s - entering: %v.\n", node.Type, node.Literal, entering)
 	if node.Type == blackfriday.CodeBlock && entering == true {
 		return visitor.CodeBlock(visitor, node)
 	}

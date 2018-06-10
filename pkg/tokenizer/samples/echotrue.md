@@ -2,7 +2,7 @@
 
 This is a test:
 
-	$ echo true
-	true
+	$ echo "true, true, true, true, true, true, true, true, true"
+	true, true, true, true, true, true, true, true, true
 
 This is it.
