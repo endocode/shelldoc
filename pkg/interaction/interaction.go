@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/Endocode/shelldoc/pkg/shell"
+	"github.com/endocode/shelldoc/pkg/shell"
 )
 
 const (

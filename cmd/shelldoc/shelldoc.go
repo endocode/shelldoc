@@ -7,8 +7,8 @@ import (
 	"math"
 	"os"
 
-	"github.com/Endocode/shelldoc/pkg/shell"
-	"github.com/Endocode/shelldoc/pkg/tokenizer"
+	"github.com/endocode/shelldoc/pkg/shell"
+	"github.com/endocode/shelldoc/pkg/tokenizer"
 	"github.com/spf13/pflag"
 )
 

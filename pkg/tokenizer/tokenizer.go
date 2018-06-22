@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Endocode/shelldoc/pkg/interaction"
+	"github.com/endocode/shelldoc/pkg/interaction"
 	"gopkg.in/russross/blackfriday.v2"
 )
 
