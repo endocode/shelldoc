@@ -105,6 +105,9 @@ func (interaction *Interaction) evaluateResponse(response []string) bool {
 			break
 		}
 	}
+	if len(output) == 0 && len(expected) == 0 {
+		return true
+	}
 	return reflect.DeepEqual(output, expected)
 }
 
