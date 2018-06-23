@@ -30,6 +30,10 @@ type Interaction struct {
 	// Response contains the exected response from the shell, in plain text
 	Response []string
 	//AlternativeRegEx string
+	// Language contains the language specified if the interaction was extracted from a fenced code block
+	Language string
+	// Attributes contains the shelldoc attributes specified in a fenced code block
+	Attributes map[string]string
 	// Caption contains a descriptive name for the interaction
 	Caption string
 	// Result contains a human readable description of the result after the interaction has been executed
