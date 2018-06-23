@@ -11,6 +11,7 @@ import (
 var echoTrueCodeBlockCount int
 
 func codeBlockHandler(visitor *Visitor, node *blackfriday.Node) blackfriday.WalkStatus {
+	//fmt.Printf("%s: %v\n", node.Type, string(node.Literal))
 	echoTrueCodeBlockCount++
 	return blackfriday.GoToNext
 }

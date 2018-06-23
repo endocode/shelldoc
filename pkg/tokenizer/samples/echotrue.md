@@ -1,4 +1,4 @@
-# Test: call `echo true`
+# Test: call "echo true"
 
 This is a test:
 
