@@ -24,16 +24,22 @@ are considered the expected response. *shelldoc* will execute these
 commands and return whether or not the commands succeeded and the
 output matches the specificaton:
 
-	% shelldoc README.md
-    SHELLDOC: doc-testing "README.md" ...
-     CMD (1): echo Hello                                ?  Hello                      :  PASS (match)
-     CMD (2): go get github.com/endocode/shelldoc/c...  ?  ...                        :  PASS (match)
-    SUCCESS: 2 tests (2 successful, 0 failures, 0 execution errors)
+~~~shell
+% shelldoc README.md 
+SHELLDOC: doc-testing "go/src/github.com/endocode/shelldoc/README.md" ...
+ CMD (1): echo Hello                                ?  Hello                      :  PASS (match)
+ CMD (2): go get -u github.com/endocode/shelldo...  ?  ...                        :  PASS (match)
+ CMD (3): export GREETING="Hello World"             ?  (no response expected)     :  PASS (execution successful)
+ CMD (4): echo $GREETING                            ?  Hello World                :  PASS (match)
+SUCCESS: 4 tests (4 successful, 0 failures, 0 execution errors)
+~~~
 
 Note that this example is not executed as a test by *shelldoc*, since
 it does not start with a trigger character. Trying to do so would
 cause an infinite recursion when evaluating the README.md using
-*shelldoc*. Try it :-)
+*shelldoc*. Try it :-) The percent symbol is commonly used as a shell
+prompt next to  _$_ or a _>_. It can be used in documentation as a
+prompt indicator without triggering a *shelldoc* test.
 
 ## Installation
 
@@ -44,9 +50,15 @@ The usual way to install *shelldoc* is using `go get`:
 
 Executing documentation may have side effects. For example, running
 this `go get` command just installed the latest version of *shelldoc*
-in your system.
+in your system. Containers or VMs can be used to isolate such side
+effects.
 
 ## Details and syntax
+
+All code blocks in the Markdown input are evaluated and executed as
+tests. A test succeeds if it returns the expected exit code, and the
+output of the command matches the response specified in the code
+block.
 
 *shelldoc* supports both simple and fenced code blocks. An ellipsis,
 as used in the description on how to install *shelldoc* above,
@@ -62,6 +74,14 @@ different shell can be specified using the `-s (--shell)` flag:
     % shelldoc --verbose --shell=/bin/sh README.md
 	Note: Using user-specified shell /bin/sh.
 	...
+
+The shell's lifetime is that of the test run of a single Markdown
+file. The environment of the shell is available between test
+interactions:
+
+	$ export GREETING="Hello World"
+	$ echo $GREETING
+	Hello World
 
 *shelldoc* uses
 the
@@ -88,11 +108,12 @@ description of how the Markdown file should be interpreted, and how
 ## Authors and license
 
 *shelldoc* was developed
-by [Mirko Boehm](https://github.com/mirkoboehm). Commercial support,
+by [Mirko Boehm](http://www.creative-destruction.org). Commercial support,
 if necessary, is provided
 by [Endocode](https://endocode.com/).
 
 The command line programs of *shelldoc* are located in the `cmd/`
 subdirectory and licensed under the terms of the GPL, version 3. The
 reusable components are located in the `pkg/` subdirectory and
-licensed under the terms of the LGPL version 3.
+licensed under the terms of the LGPL version 3. Unit test and example
+code is licensed under the Apache-2.0 license.

@@ -1,5 +1,9 @@
 package tokenizer
 
+// This file is part of shelldoc.
+// © 2018, Mirko Boehm <mirko@endocode.com> and the shelldoc contributors
+// SPDX-License-Identifier: LGPL-3.0
+
 import (
 	"log"
 	"regexp"
@@ -41,7 +45,7 @@ func handleCodeBlock(visitor *Visitor, node *blackfriday.Node) blackfriday.WalkS
 			current.Cmd = cmd
 		} else {
 			if current == nil {
-				log.Printf("no trigger prefix ($ or >), skipping: %s\n", line)
+				log.Printf("no trigger prefix ($ or >), skipping line: %s\n", line)
 				continue
 			}
 			current.Response = append(current.Response, line)

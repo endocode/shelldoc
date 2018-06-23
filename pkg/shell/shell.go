@@ -1,5 +1,9 @@
 package shell
 
+// This file is part of shelldoc.
+// © 2018, Mirko Boehm <mirko@endocode.com> and the shelldoc contributors
+// SPDX-License-Identifier: LGPL-3.0
+
 import (
 	"bufio"
 	"fmt"

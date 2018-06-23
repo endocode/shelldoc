@@ -34,7 +34,7 @@
         "request": "launch",
         "mode": "debug",
         "program": "${workspaceRoot}/cmd/shelldoc/",
-        "args": ["../../README.md"],
+        "args": ["-v", "../../README.md"],
         },
         {
             "name": "Launch",
