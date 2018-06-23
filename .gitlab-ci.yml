@@ -1,8 +1,8 @@
 image: golang:1.10
 
 stages:
-  - test
   - build
+  - test
 
 unit_tests:
   stage: test
