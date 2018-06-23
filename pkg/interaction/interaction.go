@@ -94,6 +94,20 @@ func New(caption string) *Interaction {
 	return interaction
 }
 
+// evaluateResponse compares the output to the expected response, and respects "ellipsis" (don't care from here on forward)
+func (interaction *Interaction) evaluateResponse(response []string) bool {
+	output := response
+	expected := interaction.Response
+	for index, line := range interaction.Response {
+		if strings.TrimSpace(line) == "..." {
+			output = response[:index]
+			expected = interaction.Response[:index]
+			break
+		}
+	}
+	return reflect.DeepEqual(output, expected)
+}
+
 // Execute the interaction and store the result
 func (interaction *Interaction) Execute(shell *shell.Shell) error {
 	// execute the command in the shell
@@ -106,7 +120,7 @@ func (interaction *Interaction) Execute(shell *shell.Shell) error {
 	} else if rc != 0 {
 		interaction.ResultCode = ResultError
 		interaction.Comment = fmt.Sprintf("command exited with non-zero exit code %d", rc)
-	} else if reflect.DeepEqual(output, interaction.Response) {
+	} else if interaction.evaluateResponse(output) {
 		interaction.ResultCode = ResultMatch
 		interaction.Comment = ""
 	} else if interaction.compareRegex(output) {

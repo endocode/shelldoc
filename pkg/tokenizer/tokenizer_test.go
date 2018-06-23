@@ -37,12 +37,15 @@ func TestTokenizeHelloWorld(t *testing.T) {
 	require.NoError(t, err, "Unable to read sample data file")
 	visitor := NewInteractionVisitor()
 	Tokenize(data, visitor)
-	require.Equal(t, len(visitor.Interactions), 3, "There are two code block elements with a total of 3 interactions in the sample file")
+	require.Equal(t, 4, len(visitor.Interactions), "There are three code block elements with a total of 4 interactions in the sample file")
 	require.Empty(t, visitor.Interactions[0].Response, "The first command does not expect a response")
 	require.NotEmpty(t, visitor.Interactions[1].Response, "The second command expects a response")
 	require.Equal(t, visitor.Interactions[1].Response[0], "Hello", "The second command expects a response")
 	require.NotEmpty(t, visitor.Interactions[2].Response, "The third command expects a response")
 	require.Equal(t, visitor.Interactions[2].Response[0], "World", "The third command expects a response")
+	fourth := visitor.Interactions[3]
+	require.Equal(t, 2, len(fourth.Response), "The response of the fourth interaction contains two lines")
+	require.Equal(t, "...", fourth.Response[1], "The last line of the fourth response is an ellipsis")
 }
 
 func TestTokenizeFenced(t *testing.T) {

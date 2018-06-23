@@ -16,7 +16,7 @@ func TestHelloWorld(t *testing.T) {
 	results, err := performInteractions("../../pkg/tokenizer/samples/helloworld.md")
 	require.NoError(t, err, "The HelloWorld example should execute without errors.")
 	require.Equal(t, returnSuccess, results.returncode, "The expected return code is returnSuccess.")
-	require.Equal(t, 3, results.successCount, "There are three successful tests in the sample.")
+	require.Equal(t, 4, results.successCount, "There are three successful tests in the sample.")
 }
 
 func TestHFailNoMatch(t *testing.T) {
