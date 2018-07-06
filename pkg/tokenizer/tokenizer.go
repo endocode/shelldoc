@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/endocode/shelldoc/pkg/interaction"
 	"gopkg.in/russross/blackfriday.v2"
 )
 
@@ -20,7 +19,7 @@ type Visitor struct {
 	// FencedCodeBlock should be assigned a function to be called when a fenced code block is encountered
 	FencedCodeBlock func(visitor *Visitor, node *blackfriday.Node) blackfriday.WalkStatus
 	// After parsing, Interactions will hold the shell interactions found in the file
-	Interactions []*interaction.Interaction
+	Interactions []*Interaction
 }
 
 const cmdEx = "^[\\$>]\\s+(.+)$"
@@ -30,7 +29,7 @@ func handleCodeBlock(visitor *Visitor, node *blackfriday.Node) blackfriday.WalkS
 	cmdRx := regexp.MustCompile(cmdEx)
 
 	lines := strings.Split(string(node.Literal), "\n")
-	var current *interaction.Interaction
+	var current *Interaction
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if len(line) == 0 {
@@ -39,7 +38,7 @@ func handleCodeBlock(visitor *Visitor, node *blackfriday.Node) blackfriday.WalkS
 		match := cmdRx.FindStringSubmatch(line)
 		if len(match) > 1 {
 			// begin a new command
-			current = new(interaction.Interaction)
+			current = new(Interaction)
 			visitor.Interactions = append(visitor.Interactions, current)
 			cmd := match[1]
 			current.Cmd = cmd
@@ -110,7 +109,7 @@ func handleFencedCodeBlock(visitor *Visitor, node *blackfriday.Node) blackfriday
 	// closer := lines[len(lines)-1] // closer is not parsed any further
 	lines = lines[1 : len(lines)-1]
 
-	var current *interaction.Interaction
+	var current *Interaction
 	for _, line := range lines {
 		line = strings.TrimSpace(line)
 		if len(line) == 0 {
@@ -119,7 +118,7 @@ func handleFencedCodeBlock(visitor *Visitor, node *blackfriday.Node) blackfriday
 		match := cmdRx.FindStringSubmatch(line)
 		if len(match) > 1 {
 			// begin a new command
-			current = new(interaction.Interaction)
+			current = new(Interaction)
 			current.Language = language
 			current.Attributes = attributes
 			visitor.Interactions = append(visitor.Interactions, current)
