@@ -89,6 +89,53 @@ the
 parse Markdown files, and the [pflag](https://github.com/spf13/pflag)
 package to parse the command line arguments.
 
+## Options
+
+Regular code blocks do not have a way to specify options. The only
+thing that can be specified about them are the commands and the
+responses. That means the expected return code must always be zero for
+the test to succeed≥
+
+Sometimes, however, things are more complicated. Some commands are
+expected to return a different exit code than zero. Some commands
+return exit codes that are unknown up-front. Both options can be
+handled by specifying tests in fenced code blocks. Fenced code blocks
+may have an info string after the opening characters. This info string
+is usually used to specify the language of the following code. After
+the language specifier however, other information may
+follow. `shelldoc` uses this opportunity to allow the user to specify
+options about the test. These options are:
+
+	```shell {shelldocwhatever}
+    % echo Hello && false
+    Hello
+    ```
+Try executing this test:
+
+```shell {shelldocwhatever}
+> echo Hello && false
+Hello
+```
+
+The _shelldocwhatever_ options tells `shelldoc` that the exit code of
+the following command does not matter. If any expected response is
+specified, it will still be evaluated.
+
+    ```shell {shelldocexitcode=2}
+    % (exit 2)
+    ```
+
+This executes the test, for tests:
+
+```shell {shelldocexitcode=2}
+> (exit 2)
+```
+
+The _shelldocexitcode_ specifies an exact exit code that is
+expected. The test fails if the exit code of the command does not
+match the specified one, or if the response does not match the
+expected response.
+
 ## Contributing
 
 *shelldoc*
