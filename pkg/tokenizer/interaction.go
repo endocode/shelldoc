@@ -7,6 +7,7 @@ package tokenizer
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github.com/endocode/shelldoc/pkg/shell"
@@ -120,11 +121,25 @@ func (interaction *Interaction) Execute(shell *shell.Shell) error {
 	// execute the command in the shell
 	output, rc, err := shell.ExecuteCommand(interaction.Cmd)
 	// compare the results
+	const ExitCodeOption = "shelldocexitcode"
+	const ExitCodeWhatever = "shelldocwhatever"
+	var expectedExitCode int
+	if expectedExitCodeOption, ok := interaction.Attributes[ExitCodeOption]; ok {
+		if value, err := strconv.Atoi(expectedExitCodeOption); err == nil {
+			expectedExitCode = value
+		} else {
+			return fmt.Errorf("argument to %s needs to be an integer, got \"%s\"", ExitCodeOption, expectedExitCodeOption)
+		}
+	}
+	expectedWhatever := false
+	if _, ok := interaction.Attributes[ExitCodeWhatever]; ok {
+		expectedWhatever = true
+	}
 	if err != nil {
 		interaction.ResultCode = ResultExecutionError
 		interaction.Comment = err.Error()
 		return fmt.Errorf("unable to execute command: %v", err)
-	} else if rc != 0 {
+	} else if expectedWhatever == false && rc != expectedExitCode {
 		interaction.ResultCode = ResultError
 		interaction.Comment = fmt.Sprintf("command exited with non-zero exit code %d", rc)
 	} else if interaction.evaluateResponse(output) {

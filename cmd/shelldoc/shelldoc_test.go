@@ -29,3 +29,9 @@ func TestHFailNoMatch(t *testing.T) {
 	require.Equal(t, returnFailure, results.returncode, "The expected return code is returnFailure.")
 	require.Equal(t, 1, results.failureCount, "There is one failing test in the sample.")
 }
+
+func TestExitCodesOptions(t *testing.T) {
+	results, err := performInteractions("../../pkg/tokenizer/samples/options.md")
+	require.NoError(t, err, "The HelloWorld example should execute without errors.")
+	require.Equal(t, returnSuccess, results.returncode, "The expected return code is returnFailure.")
+}
