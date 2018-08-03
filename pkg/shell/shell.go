@@ -62,10 +62,9 @@ func (shell *Shell) ExecuteCommand(command string) ([]string, int, error) {
 		beginMarker = ">>>>>>>>>>SHELLDOC_MARKER>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
 		endMarker   = "<<<<<<<<<<SHELLDOC_MARKER"
 	)
-	instruction := fmt.Sprintf("%s\n", strings.TrimSpace(command))
+	instruction := fmt.Sprintf("%s", strings.TrimSpace(command))
 	io.WriteString(shell.stdin, fmt.Sprintf("echo \"%s\"\n", beginMarker))
-	io.WriteString(shell.stdin, instruction)
-	io.WriteString(shell.stdin, fmt.Sprintf("echo \"%s $?\"\n", endMarker))
+	io.WriteString(shell.stdin, fmt.Sprintf("%s; echo \"%s $?\"\n", instruction, endMarker))
 
 	// read output (TODO: with timeout), watch for markers:
 	beginEx := fmt.Sprintf("^%s$", beginMarker)
