@@ -94,7 +94,7 @@ package to parse the command line arguments.
 Regular code blocks do not have a way to specify options. The only
 thing that can be specified about them are the commands and the
 responses. That means the expected return code must always be zero for
-the test to succeed≥
+the test to succeed.
 
 Sometimes, however, things are more complicated. Some commands are
 expected to return a different exit code than zero. Some commands
