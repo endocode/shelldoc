@@ -26,7 +26,7 @@ const (
 type Options struct {
 	shell        string // The shell to invoke
 	verbose      bool   // Enable trace log output
-	faliureStops bool   // Stop on first faliure
+	failureStops bool   // Stop on first failure
 }
 
 // global variables
@@ -120,7 +120,7 @@ func performInteractions(inputfile string) (resultStats, error) {
 			results.returncode = max(results.returncode, returnFailure)
 			results.failureCount++
 
-			if options.faliureStops {
+			if options.failureStops {
 				return results, fmt.Errorf("falure found stopping")
 			}
 		} else {
@@ -134,7 +134,7 @@ func performInteractions(inputfile string) (resultStats, error) {
 func main() {
 	pflag.StringVarP(&options.shell, "shell", "s", "", "The shell to invoke (default: $SHELL).")
 	pflag.BoolVarP(&options.verbose, "verbose", "v", false, "Enable diagnostic log output.")
-	pflag.BoolVarP(&options.faliureStops, "stop-on-faliure", "f", false, "Stop on the first faliure.")
+	pflag.BoolVarP(&options.failureStops, "stop-on-failure", "f", false, "Stop on the first failure.")
 	pflag.Parse()
 	initializeLogging()
 	args := pflag.Args()
