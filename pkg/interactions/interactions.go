@@ -37,7 +37,7 @@ func result(code int) string {
 	}
 }
 
-func performInteractions(inputfile string, shellname string, verbose bool) (resultStats, error) {
+func performInteractions(inputfile string, shellname string, verbose bool, failureStops bool) (resultStats, error) {
 
 	// detect shell
 	shellpath, err := shell.DetectShell(shellname)
@@ -92,6 +92,9 @@ func performInteractions(inputfile string, shellname string, verbose bool) (resu
 		if interaction.HasFailure() {
 			results.returncode = max(results.returncode, returnFailure)
 			results.failureCount++
+			if failureStops {
+				return results, fmt.Errorf("Stop requested after first failed test.")
+			}
 		} else {
 			results.successCount++
 		}
@@ -101,10 +104,10 @@ func performInteractions(inputfile string, shellname string, verbose bool) (resu
 }
 
 // ExecuteFiles runs each file through performInteractions and aggregates the results
-func ExecuteFiles(files []string, shellname string, verbose bool) int {
+func ExecuteFiles(files []string, shellname string, verbose bool, failureStops bool) int {
 	returnCode := returnSuccess
 	for _, file := range files {
-		results, err := performInteractions(file, shellname, verbose)
+		results, err := performInteractions(file, shellname, verbose, failureStops)
 		if err != nil {
 			fmt.Println(err) // log may be disabled (see "verbose")
 			os.Exit(returnError)
