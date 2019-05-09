@@ -25,7 +25,7 @@ commands and return whether or not the commands succeeded and the
 output matches the specificaton:
 
 ~~~shell
-% shelldoc README.md 
+% shelldoc run README.md
 SHELLDOC: doc-testing "go/src/github.com/endocode/shelldoc/README.md" ...
  CMD (1): echo Hello                                ?  Hello                      :  PASS (match)
  CMD (2): go get -u github.com/endocode/shelldo...  ?  ...                        :  PASS (match)
@@ -71,7 +71,7 @@ A shell is launched that will execute all shell commands in a single
 Markdown file. By default, the user's configured shell is used. A
 different shell can be specified using the `-s (--shell)` flag:
 
-    % shelldoc --verbose --shell=/bin/sh README.md
+    % shelldoc --verbose run --shell=/bin/sh README.md
 	Note: Using user-specified shell /bin/sh.
 	...
 
