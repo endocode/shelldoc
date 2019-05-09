@@ -12,6 +12,7 @@ import (
 )
 
 var shellname string
+var failureStops bool
 
 // runCmd represents the run command
 var runCmd = &cobra.Command{
@@ -24,9 +25,10 @@ executes them and compares their output with the content of the code block.`,
 
 func init() {
 	runCmd.Flags().StringVarP(&shellname, "shell", "s", "", "Keep the created directories instead of cleaning up.")
+	runCmd.Flags().BoolVarP(&failureStops, "fail", "f", false, "Stop on the first failure.")
 	rootCmd.AddCommand(runCmd)
 }
 
 func executeRun(cmd *cobra.Command, args []string) {
-	os.Exit(interactions.ExecuteFiles(args, shellname, verbose))
+	os.Exit(interactions.ExecuteFiles(args, shellname, verbose, failureStops))
 }
