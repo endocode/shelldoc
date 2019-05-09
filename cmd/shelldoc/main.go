@@ -4,7 +4,7 @@
 
 package main
 
-import "github.com/endocode/shelldoc/cmd/shelldoc2/cmd"
+import "github.com/endocode/shelldoc/cmd/shelldoc/cmd"
 
 func main() {
 	cmd.Execute()

@@ -6,4 +6,7 @@ VERSION:
 VersionString = $(shell head -n 1 VERSION | tr -d '\n')
 
 build				: VERSION
-	cd cmd/shelldoc2 && go build -ldflags '-X github.com/endocode/shelldoc/pkg/version.versionString=${VersionString}'
+	cd cmd/shelldoc && go build -ldflags '-X github.com/endocode/shelldoc/pkg/version.versionString=${VersionString}'
+
+test:
+	go test ./...
