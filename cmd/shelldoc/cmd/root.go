@@ -36,7 +36,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initLogging)
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable diagnostics")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Enable diagnostic log output")
 }
 
 func initLogging() {
