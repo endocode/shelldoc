@@ -57,15 +57,29 @@ func TestOneTestSuite(t *testing.T) {
 	// Write a minimal XML file with an empty testsuites section.
 	testsuites := JUnitTestSuites{}
 	ts := JUnitTestSuite{
-		Tests:      5,
-		Failures:   0,
-		Time:       "",
+		Tests:      1,
+		Failures:   1,
+		Time:       FormatTime(1234000000),
 		Name:       "Test-TestSuite",
 		Properties: []JUnitProperty{},
 		TestCases:  []JUnitTestCase{},
 	}
 	ts.Properties = append(ts.Properties, JUnitProperty{"go.version", runtime.Version()})
+
+	testCase := JUnitTestCase{
+		Classname: "README.md",
+		Name:      "ls -l",
+		Time:      FormatTime(51345000),
+		Failure: &JUnitFailure{
+			Message:  "Failed",
+			Type:     "mismatch",
+			Contents: "(the test output)",
+		},
+	}
+	ts.TestCases = append(ts.TestCases, testCase)
 	testsuites.Suites = append(testsuites.Suites, ts)
+
+	// The rest should be data/table driven...:
 	file, err := openTmpFile()
 	require.NoError(t, err, "Unable to open file for temporary XML document")
 	defer removeTmpFile(file.Name())

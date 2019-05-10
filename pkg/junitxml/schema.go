@@ -5,7 +5,11 @@ package junitxml
 //
 // The types in this files are based on an excerpt from https://github.com/jstemmer/go-junit-report.
 
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"fmt"
+	"time"
+)
 
 // JUnitTestSuites is a collection of JUnit test suites.
 type JUnitTestSuites struct {
@@ -51,4 +55,14 @@ type JUnitFailure struct {
 	Message  string `xml:"message,attr"`
 	Type     string `xml:"type,attr"`
 	Contents string `xml:",chardata"`
+}
+
+// FormatTime creates a representation of time.Duration as expected in the JUnixXML output.
+func FormatTime(d time.Duration) string {
+	return fmt.Sprintf("%.3f", d.Seconds())
+}
+
+// FormatBenchmarkTime creates a representation of time.Duration as expected in the JUnixXML output for benchmarks.
+func FormatBenchmarkTime(d time.Duration) string {
+	return fmt.Sprintf("%.9f", d.Seconds())
 }
