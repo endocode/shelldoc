@@ -24,8 +24,8 @@ executes them and compares their output with the content of the code block.`,
 }
 
 func init() {
-	runCmd.Flags().StringVarP(&shellname, "shell", "s", "", "Keep the created directories instead of cleaning up.")
-	runCmd.Flags().BoolVarP(&failureStops, "fail", "f", false, "Stop on the first failure.")
+	runCmd.Flags().StringVarP(&shellname, "shell", "s", "", "The shell to invoke (default: $SHELL)")
+	runCmd.Flags().BoolVarP(&failureStops, "fail", "f", false, "Stop on the first failure")
 	rootCmd.AddCommand(runCmd)
 }
 

@@ -13,7 +13,7 @@ import (
 
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Print the shelldoc version.",
+	Short: "Print the shelldoc version",
 	Long:  `Print the shelldoc version.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(version.Version())
