@@ -2,9 +2,11 @@ package interactions
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"os"
 
+	"github.com/endocode/shelldoc/pkg/junitxml"
 	"github.com/endocode/shelldoc/pkg/shell"
 	"github.com/endocode/shelldoc/pkg/tokenizer"
 )
@@ -37,21 +39,18 @@ func result(code int) string {
 	}
 }
 
-func performInteractions(inputfile string, shellname string, verbose bool, failureStops bool) (resultStats, error) {
-
+func performInteractions(inputfile string, shellname string, verbose bool, failureStops bool, suites *junitxml.JUnitTestSuites) (resultStats, error) {
 	// detect shell
 	shellpath, err := shell.DetectShell(shellname)
 	if err != nil {
 		return resultStats{}, err
 	}
-
 	// start a background shell, it will run until the function ends
 	shell, err := shell.StartShell(shellpath)
 	if err != nil {
 		return resultStats{}, fmt.Errorf("unable to start shell: %v", err)
 	}
 	defer shell.Exit()
-
 	// read input data
 	data, err := ReadInput([]string{inputfile})
 	if err != nil {
@@ -60,7 +59,9 @@ func performInteractions(inputfile string, shellname string, verbose bool, failu
 	// run the input through the tokenizer
 	visitor := tokenizer.NewInteractionVisitor()
 	tokenizer.Tokenize(data, visitor)
-
+	// the test suite object for this file
+	suite := junitxml.JUnitTestSuite{}
+	suite.Name = inputfile
 	// execute the interactions and verify the results:
 	fmt.Printf("SHELLDOC: doc-testing \"%s\" ...\n", inputfile)
 	results := resultStats{returnSuccess, 0, 0, 0, 0}
@@ -77,9 +78,12 @@ func performInteractions(inputfile string, shellname string, verbose bool, failu
 	closer := fmt.Sprintf("%s%%s\n", resultString)
 
 	for index, interaction := range visitor.Interactions {
+		testcase := junitxml.JUnitTestCase{}
+		suite.Tests++
 		results.testCount++
 		fmt.Printf(opener, fmt.Sprintf("(%d)", index+1), interaction.Describe())
-
+		testcase.Name = interaction.Cmd
+		testcase.Classname = inputfile
 		if verbose {
 			fmt.Printf(" --> %s\n", interaction.Cmd)
 		}
@@ -91,28 +95,47 @@ func performInteractions(inputfile string, shellname string, verbose bool, failu
 		fmt.Printf(closer, interaction.Result())
 		if interaction.HasFailure() {
 			results.returncode = max(results.returncode, returnFailure)
+			suite.Failures++
+			testcase.Failure = &junitxml.JUnitFailure{interaction.Result(), "failed", ""}
 			results.failureCount++
-			if failureStops {
-				return results, fmt.Errorf("Stop requested after first failed test.")
-			}
 		} else {
 			results.successCount++
 		}
+		suite.TestCases = append(suite.TestCases, testcase)
+		if interaction.HasFailure() && failureStops {
+			log.Printf("Stop requested after first failed test.")
+			break
+		}
 	}
 	fmt.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(results.returncode), results.testCount, results.successCount, results.failureCount, results.errorCount)
+	suites.Suites = append(suites.Suites, suite)
 	return results, nil
 }
 
 // ExecuteFiles runs each file through performInteractions and aggregates the results
 func ExecuteFiles(files []string, shellname string, verbose bool, failureStops bool) int {
 	returnCode := returnSuccess
+	suites := junitxml.JUnitTestSuites{}
 	for _, file := range files {
-		results, err := performInteractions(file, shellname, verbose, failureStops)
+		results, err := performInteractions(file, shellname, verbose, failureStops, &suites)
 		if err != nil {
 			fmt.Println(err) // log may be disabled (see "verbose")
 			os.Exit(returnError)
 		}
 		returnCode = max(results.returncode, returnCode)
+	}
+	// write the result to the specified XML output file:
+	writeXML := true
+	xmlFilename := "testresults.xml"
+	if writeXML {
+		file, err := os.OpenFile(xmlFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777)
+		if err != nil {
+			fmt.Printf("Unable to open XML output file for writing: %v\n", err)
+			os.Exit(returnError)
+		}
+		if err := suites.Write(file); err != nil {
+			fmt.Printf("Error writing XML output file: %v\n", err)
+		}
 	}
 	return returnCode
 }
