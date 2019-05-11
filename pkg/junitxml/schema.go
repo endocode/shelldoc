@@ -25,7 +25,7 @@ type JUnitTestSuite struct {
 	Failures   int             `xml:"failures,attr"`
 	Time       string          `xml:"time,attr"`
 	Name       string          `xml:"name,attr"`
-	Properties []JUnitProperty `xml:"properties>property,omitempty"`
+	Properties []JUnitProperty `xml:"properties,omitempty>property,omitempty"`
 	TestCases  []JUnitTestCase
 }
 
