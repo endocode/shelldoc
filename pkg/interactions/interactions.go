@@ -62,6 +62,7 @@ func performInteractions(inputfile string, shellname string, verbose bool, failu
 	// the test suite object for this file
 	suite := junitxml.JUnitTestSuite{}
 	suite.Name = inputfile
+	suite.AddProperty("shelldoc-version", version.Version())
 	// execute the interactions and verify the results:
 	fmt.Printf("SHELLDOC: doc-testing \"%s\" ...\n", inputfile)
 	results := resultStats{returnSuccess, 0, 0, 0, 0}
