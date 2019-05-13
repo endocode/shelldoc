@@ -64,7 +64,7 @@ func TestOneTestSuite(t *testing.T) {
 		Properties: []JUnitProperty{},
 		TestCases:  []JUnitTestCase{},
 	}
-	ts.Properties = append(ts.Properties, JUnitProperty{"go.version", runtime.Version()})
+	ts.AddProperty("go.version", runtime.Version())
 
 	testCase := JUnitTestCase{
 		Classname: "README.md",
