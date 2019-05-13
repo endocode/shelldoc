@@ -1,4 +1,4 @@
-package interactions
+package run
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	"github.com/endocode/shelldoc/pkg/junitxml"
 	"github.com/endocode/shelldoc/pkg/shell"
 	"github.com/endocode/shelldoc/pkg/tokenizer"
+	"github.com/endocode/shelldoc/pkg/version"
 )
 
 func max(a, b int) int { // really, golang?
@@ -39,9 +40,9 @@ func result(code int) string {
 	}
 }
 
-func performInteractions(inputfile string, shellname string, verbose bool, failureStops bool, suites *junitxml.JUnitTestSuites) (resultStats, error) {
+func (context *Context) performInteractions(inputfile string) (resultStats, error) {
 	// detect shell
-	shellpath, err := shell.DetectShell(shellname)
+	shellpath, err := shell.DetectShell(context.ShellName)
 	if err != nil {
 		return resultStats{}, err
 	}
@@ -70,7 +71,7 @@ func performInteractions(inputfile string, shellname string, verbose bool, failu
 	magnitude := int(math.Log10(float64(len(visitor.Interactions)))) + 1
 	openerLineEnding := "  : "
 	resultString := " "
-	if verbose {
+	if context.Verbose {
 		openerLineEnding = "\n"
 		resultString = " <-- "
 	}
@@ -85,7 +86,7 @@ func performInteractions(inputfile string, shellname string, verbose bool, failu
 		fmt.Printf(opener, fmt.Sprintf("(%d)", index+1), interaction.Describe())
 		testcase.Name = interaction.Cmd
 		testcase.Classname = inputfile
-		if verbose {
+		if context.Verbose {
 			fmt.Printf(" --> %s\n", interaction.Cmd)
 		}
 		if err := interaction.Execute(&shell); err != nil {
@@ -103,40 +104,44 @@ func performInteractions(inputfile string, shellname string, verbose bool, failu
 			results.successCount++
 		}
 		suite.TestCases = append(suite.TestCases, testcase)
-		if interaction.HasFailure() && failureStops {
+		if interaction.HasFailure() && context.FailureStops {
 			log.Printf("Stop requested after first failed test.")
 			break
 		}
 	}
 	fmt.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(results.returncode), results.testCount, results.successCount, results.failureCount, results.errorCount)
-	suites.Suites = append(suites.Suites, suite)
+	context.Suites.Suites = append(context.Suites.Suites, suite)
 	return results, nil
 }
 
 // ExecuteFiles runs each file through performInteractions and aggregates the results
-func ExecuteFiles(files []string, shellname string, verbose bool, failureStops bool) int {
+func (context *Context) ExecuteFiles() int {
 	returnCode := returnSuccess
-	suites := junitxml.JUnitTestSuites{}
-	for _, file := range files {
-		results, err := performInteractions(file, shellname, verbose, failureStops, &suites)
+	for _, file := range context.Files {
+		results, err := context.performInteractions(file)
 		if err != nil {
 			fmt.Println(err) // log may be disabled (see "verbose")
 			os.Exit(returnError)
 		}
 		returnCode = max(results.returncode, returnCode)
 	}
-	// write the result to the specified XML output file:
-	writeXML := true
-	xmlFilename := "testresults.xml"
-	if writeXML {
-		file, err := os.OpenFile(xmlFilename, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777)
-		if err != nil {
-			fmt.Printf("Unable to open XML output file for writing: %v\n", err)
-			os.Exit(returnError)
-		}
-		if err := suites.Write(file); err != nil {
-			fmt.Printf("Error writing XML output file: %v\n", err)
-		}
+	if err := context.WriteXML(); err != nil {
+		fmt.Printf("%v\n", err)
+		os.Exit(returnError)
 	}
 	return returnCode
+}
+
+// WriteXML writes the test results to the specified XML output file
+func (context *Context) WriteXML() error {
+	if len(context.XMLOutputFile) > 0 {
+		file, err := os.OpenFile(context.XMLOutputFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0777)
+		if err != nil {
+			return fmt.Errorf("unable to open XML output file for writing: %v", err)
+		}
+		if err := context.Suites.Write(file); err != nil {
+			return fmt.Errorf("error writing XML output file: %v", err)
+		}
+	}
+	return nil
 }

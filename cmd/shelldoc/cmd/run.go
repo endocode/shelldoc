@@ -7,12 +7,11 @@ package cmd
 import (
 	"os"
 
-	"github.com/endocode/shelldoc/pkg/interactions"
+	"github.com/endocode/shelldoc/pkg/run"
 	"github.com/spf13/cobra"
 )
 
-var shellname string
-var failureStops bool
+var context run.Context
 
 // runCmd represents the run command
 var runCmd = &cobra.Command{
@@ -24,11 +23,13 @@ executes them and compares their output with the content of the code block.`,
 }
 
 func init() {
-	runCmd.Flags().StringVarP(&shellname, "shell", "s", "", "The shell to invoke (default: $SHELL)")
-	runCmd.Flags().BoolVarP(&failureStops, "fail", "f", false, "Stop on the first failure")
+	runCmd.Flags().StringVarP(&context.ShellName, "shell", "s", "", "The shell to invoke (default: $SHELL)")
+	runCmd.Flags().BoolVarP(&context.FailureStops, "fail", "f", false, "Stop on the first failure")
+	runCmd.Flags().StringVarP(&context.XMLOutputFile, "xml", "x", "", "Write results to the specified output file in JUnitXML format")
 	rootCmd.AddCommand(runCmd)
 }
 
 func executeRun(cmd *cobra.Command, args []string) {
-	os.Exit(interactions.ExecuteFiles(args, shellname, verbose, failureStops))
+	context.Files = args
+	os.Exit(context.ExecuteFiles())
 }
