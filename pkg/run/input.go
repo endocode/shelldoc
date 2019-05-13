@@ -1,4 +1,4 @@
-package interactions
+package run
 
 // This file is part of shelldoc.
 // © 2018, Mirko Boehm <mirko@endocode.com> and the shelldoc contributors
