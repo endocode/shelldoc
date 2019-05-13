@@ -25,7 +25,7 @@ type JUnitTestSuite struct {
 	Failures   int             `xml:"failures,attr"`
 	Time       string          `xml:"time,attr"`
 	Name       string          `xml:"name,attr"`
-	Properties []JUnitProperty `xml:"properties,omitempty>property,omitempty"`
+	Properties []JUnitProperty `xml:"properties>property,omitempty"`
 	TestCases  []JUnitTestCase
 }
 
@@ -65,4 +65,10 @@ func FormatTime(d time.Duration) string {
 // FormatBenchmarkTime creates a representation of time.Duration as expected in the JUnixXML output for benchmarks.
 func FormatBenchmarkTime(d time.Duration) string {
 	return fmt.Sprintf("%.9f", d.Seconds())
+}
+
+// AddProperty adds a property to the properties of the test suite.
+func (suite *JUnitTestSuite) AddProperty(key, value string) {
+	prop := JUnitProperty{key, value}
+	suite.Properties = append(suite.Properties, prop)
 }
