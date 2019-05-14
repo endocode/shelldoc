@@ -20,13 +20,13 @@ func max(a, b int) int { // really, golang?
 }
 
 type resultStats struct {
-	testCount, successCount, failureCount, errorCount int
+	successCount, failureCount, errorCount int
 }
 
 const (
-	returnSuccess = iota
-	returnFailure
-	returnError
+	returnSuccess = iota // the test succeeded
+	returnFailure        // the test failed (a problemn with the test)
+	returnError          // there was an error executing the test (a problem with shelldoc)
 )
 
 func result(code int) string {
@@ -66,7 +66,7 @@ func (context *Context) performInteractions(inputfile string) (resultStats, erro
 	suite.AddProperty("shelldoc-version", version.Version())
 	// execute the interactions and verify the results:
 	fmt.Printf("SHELLDOC: doc-testing \"%s\" ...\n", inputfile)
-	results := resultStats{0, 0, 0, 0}
+	results := resultStats{0, 0, 0}
 	// construct the opener and closer format strings, since they depend on verbose mode
 	magnitude := int(math.Log10(float64(len(visitor.Interactions)))) + 1
 	openerLineEnding := "  : "
@@ -81,8 +81,6 @@ func (context *Context) performInteractions(inputfile string) (resultStats, erro
 
 	for index, interaction := range visitor.Interactions {
 		testcase := junitxml.JUnitTestCase{}
-		suite.Tests++
-		results.testCount++
 		fmt.Printf(opener, fmt.Sprintf("(%d)", index+1), interaction.Describe())
 		testcase.Name = interaction.Cmd
 		testcase.Classname = inputfile
@@ -103,13 +101,13 @@ func (context *Context) performInteractions(inputfile string) (resultStats, erro
 		} else {
 			results.successCount++
 		}
-		suite.TestCases = append(suite.TestCases, testcase)
+		suite.RegisterTestCase(testcase)
 		if interaction.HasFailure() && context.FailureStops {
 			log.Printf("Stop requested after first failed test.")
 			break
 		}
 	}
-	fmt.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(context.ReturnCode()), results.testCount, results.successCount, results.failureCount, results.errorCount)
+	fmt.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(context.ReturnCode()), suite.TestCount(), suite.SuccessCount(), results.failureCount, results.errorCount)
 	context.Suites.Suites = append(context.Suites.Suites, suite)
 	return results, nil
 }

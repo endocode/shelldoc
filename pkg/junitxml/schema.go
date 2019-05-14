@@ -72,3 +72,28 @@ func (suite *JUnitTestSuite) AddProperty(key, value string) {
 	prop := JUnitProperty{key, value}
 	suite.Properties = append(suite.Properties, prop)
 }
+
+// TestCount returns the number of test cases in the test suite.
+func (suite *JUnitTestSuite) TestCount() int {
+	return len(suite.TestCases)
+}
+
+// SuccessCount returns the number of successfully executed test cases in the test suite.
+func (suite *JUnitTestSuite) SuccessCount() int {
+	counter := 0
+	for _, testcase := range suite.TestCases {
+		if testcase.Failure == nil {
+			counter++
+		}
+	}
+	return counter
+}
+
+// RegisterTestCase registers a test case with the test suite. The test count increments.
+func (suite *JUnitTestSuite) RegisterTestCase(testcase JUnitTestCase) {
+	suite.Tests++
+	suite.TestCases = append(suite.TestCases, testcase)
+	if suite.Tests != suite.TestCount() {
+		panic(fmt.Sprintf("internal constraint violated - Tests and TestCases mismatch: %v", suite))
+	}
+}
