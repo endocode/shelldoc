@@ -78,6 +78,15 @@ func (suite *JUnitTestSuite) TestCount() int {
 	return len(suite.TestCases)
 }
 
+// RegisterFailure registers a failure for a test case.
+func (testcase *JUnitTestCase) RegisterFailure(failuretype string, message string) {
+	failure := &JUnitFailure{
+		Type:    failuretype,
+		Message: message,
+	}
+	testcase.Failure = failure
+}
+
 // SuccessCount returns the number of successfully executed test cases in the test suite.
 func (suite *JUnitTestSuite) SuccessCount() int {
 	counter := 0
@@ -94,11 +103,25 @@ func (suite *JUnitTestSuite) FailureCount() int {
 	return suite.TestCount() - suite.SuccessCount()
 }
 
+// FailureCountForType returns the number of executed test cases in the test suite that have failed with the specified failure type.
+func (suite *JUnitTestSuite) FailureCountForType(failuretype string) int {
+	counter := 0
+	for _, testcase := range suite.TestCases {
+		if testcase.Failure != nil && testcase.Failure.Type == failuretype {
+			counter++
+		}
+	}
+	return counter
+}
+
 // RegisterTestCase registers a test case with the test suite. The test count increments.
 func (suite *JUnitTestSuite) RegisterTestCase(testcase JUnitTestCase) {
 	suite.Tests++
 	suite.TestCases = append(suite.TestCases, testcase)
 	if suite.Tests != suite.TestCount() {
 		panic(fmt.Sprintf("internal constraint violated - Tests and TestCases mismatch: %v", suite))
+	}
+	if testcase.Failure != nil {
+		suite.Failures++
 	}
 }
