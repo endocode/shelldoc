@@ -118,9 +118,6 @@ func (interaction *Interaction) evaluateResponse(response []string) bool {
 
 // Execute the interaction and store the result
 func (interaction *Interaction) Execute(shell *shell.Shell) error {
-	// execute the command in the shell
-	output, rc, err := shell.ExecuteCommand(interaction.Cmd)
-	// compare the results
 	const ExitCodeOption = "shelldocexitcode"
 	const ExitCodeWhatever = "shelldocwhatever"
 	var expectedExitCode int
@@ -135,6 +132,9 @@ func (interaction *Interaction) Execute(shell *shell.Shell) error {
 	if _, ok := interaction.Attributes[ExitCodeWhatever]; ok {
 		expectedWhatever = true
 	}
+	// execute the command in the shell
+	output, rc, err := shell.ExecuteCommand(interaction.Cmd)
+	// compare the results
 	if err != nil {
 		interaction.ResultCode = ResultExecutionError
 		interaction.Comment = err.Error()
