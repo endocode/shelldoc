@@ -18,10 +18,6 @@ func max(a, b int) int { // really, golang?
 	return b
 }
 
-type resultStats struct {
-	errorCount int
-}
-
 const (
 	returnSuccess = iota // the test succeeded
 	returnFailure        // the test failed (a problemn with the test)
@@ -65,7 +61,6 @@ func (context *Context) performInteractions(inputfile string) (junitxml.JUnitTes
 	suite.AddProperty("shelldoc-version", version.Version())
 	// execute the interactions and verify the results:
 	fmt.Printf("SHELLDOC: doc-testing \"%s\" ...\n", inputfile)
-	results := resultStats{0}
 	// construct the opener and closer format strings, since they depend on verbose mode
 	magnitude := int(math.Log10(float64(len(visitor.Interactions)))) + 1
 	openerLineEnding := "  : "
@@ -79,23 +74,23 @@ func (context *Context) performInteractions(inputfile string) (junitxml.JUnitTes
 	closer := fmt.Sprintf("%s%%s\n", resultString)
 
 	for index, interaction := range visitor.Interactions {
-		testcase := junitxml.JUnitTestCase{}
+		testcase := junitxml.JUnitTestCase{
+			Name:      interaction.Cmd,
+			Classname: inputfile,
+		}
 		fmt.Printf(opener, fmt.Sprintf("(%d)", index+1), interaction.Describe())
-		testcase.Name = interaction.Cmd
-		testcase.Classname = inputfile
 		if context.Verbose {
 			fmt.Printf(" --> %s\n", interaction.Cmd)
 		}
 		if err := interaction.Execute(&shell); err != nil {
 			fmt.Printf(" --  ERROR: %v", err)
 			context.RegisterReturnCode(returnError)
-			results.errorCount++
+			testcase.RegisterFailure(result(returnError), interaction.Result())
 		}
 		fmt.Printf(closer, interaction.Result())
 		if interaction.HasFailure() {
 			context.RegisterReturnCode(returnFailure)
-			suite.Failures++
-			testcase.Failure = &junitxml.JUnitFailure{interaction.Result(), "failed", ""}
+			testcase.RegisterFailure(result(returnFailure), interaction.Result())
 		}
 		suite.RegisterTestCase(testcase)
 		if interaction.HasFailure() && context.FailureStops {
@@ -103,7 +98,8 @@ func (context *Context) performInteractions(inputfile string) (junitxml.JUnitTes
 			break
 		}
 	}
-	fmt.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(context.ReturnCode()), suite.TestCount(), suite.SuccessCount(), suite.FailureCount(), results.errorCount)
+	fmt.Printf("%s: %d tests - %d successful, %d failures (%d execution errors)\n", result(context.ReturnCode()), suite.TestCount(),
+		suite.SuccessCount(), suite.FailureCount(), suite.FailureCountForType(result(returnError)))
 	context.Suites.Suites = append(context.Suites.Suites, suite)
 	return suite, nil
 }
