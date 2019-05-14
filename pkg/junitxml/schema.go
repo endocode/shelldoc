@@ -89,6 +89,11 @@ func (suite *JUnitTestSuite) SuccessCount() int {
 	return counter
 }
 
+// FailureCount returns the number of executed test cases in the test suite that have failed.
+func (suite *JUnitTestSuite) FailureCount() int {
+	return suite.TestCount() - suite.SuccessCount()
+}
+
 // RegisterTestCase registers a test case with the test suite. The test count increments.
 func (suite *JUnitTestSuite) RegisterTestCase(testcase JUnitTestCase) {
 	suite.Tests++
