@@ -20,7 +20,7 @@ func max(a, b int) int { // really, golang?
 }
 
 type resultStats struct {
-	returncode, testCount, successCount, failureCount, errorCount int
+	testCount, successCount, failureCount, errorCount int
 }
 
 const (
@@ -66,7 +66,7 @@ func (context *Context) performInteractions(inputfile string) (resultStats, erro
 	suite.AddProperty("shelldoc-version", version.Version())
 	// execute the interactions and verify the results:
 	fmt.Printf("SHELLDOC: doc-testing \"%s\" ...\n", inputfile)
-	results := resultStats{returnSuccess, 0, 0, 0, 0}
+	results := resultStats{0, 0, 0, 0}
 	// construct the opener and closer format strings, since they depend on verbose mode
 	magnitude := int(math.Log10(float64(len(visitor.Interactions)))) + 1
 	openerLineEnding := "  : "
@@ -91,12 +91,12 @@ func (context *Context) performInteractions(inputfile string) (resultStats, erro
 		}
 		if err := interaction.Execute(&shell); err != nil {
 			fmt.Printf(" --  ERROR: %v", err)
-			results.returncode = max(results.returncode, returnError)
+			context.RegisterReturnCode(returnError)
 			results.errorCount++
 		}
 		fmt.Printf(closer, interaction.Result())
 		if interaction.HasFailure() {
-			results.returncode = max(results.returncode, returnFailure)
+			context.RegisterReturnCode(returnFailure)
 			suite.Failures++
 			testcase.Failure = &junitxml.JUnitFailure{interaction.Result(), "failed", ""}
 			results.failureCount++
@@ -109,27 +109,26 @@ func (context *Context) performInteractions(inputfile string) (resultStats, erro
 			break
 		}
 	}
-	fmt.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(results.returncode), results.testCount, results.successCount, results.failureCount, results.errorCount)
+	fmt.Printf("%s: %d tests (%d successful, %d failures, %d execution errors)\n", result(context.ReturnCode()), results.testCount, results.successCount, results.failureCount, results.errorCount)
 	context.Suites.Suites = append(context.Suites.Suites, suite)
 	return results, nil
 }
 
 // ExecuteFiles runs each file through performInteractions and aggregates the results
 func (context *Context) ExecuteFiles() int {
-	returnCode := returnSuccess
+	context.RegisterReturnCode(returnSuccess)
 	for _, file := range context.Files {
-		results, err := context.performInteractions(file)
+		_, err := context.performInteractions(file)
 		if err != nil {
 			fmt.Println(err) // log may be disabled (see "verbose")
 			os.Exit(returnError)
 		}
-		returnCode = max(results.returncode, returnCode)
 	}
 	if err := context.WriteXML(); err != nil {
 		fmt.Printf("%v\n", err)
 		os.Exit(returnError)
 	}
-	return returnCode
+	return context.ReturnCode()
 }
 
 // WriteXML writes the test results to the specified XML output file
