@@ -125,3 +125,9 @@ func (suite *JUnitTestSuite) RegisterTestCase(testcase JUnitTestCase) {
 		suite.Failures++
 	}
 }
+
+// RegisterElapsedTime saves the elapsed time  in string format.
+func RegisterElapsedTime(start time.Time, destination *string) {
+	elapsed := time.Since(start)
+	*destination = FormatTime(elapsed)
+}

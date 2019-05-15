@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"time"
 
 	"github.com/endocode/shelldoc/pkg/junitxml"
 	"github.com/endocode/shelldoc/pkg/shell"
@@ -35,30 +36,30 @@ func result(code int) string {
 	}
 }
 
-func (context *Context) performInteractions(inputfile string) (junitxml.JUnitTestSuite, error) {
+func (context *Context) performInteractions(inputfile string) (*junitxml.JUnitTestSuite, error) {
+	// the test suite object for this file
+	suite := &junitxml.JUnitTestSuite{Name: inputfile}
+	suite.AddProperty("shelldoc-version", version.Version())
+	defer junitxml.RegisterElapsedTime(time.Now(), &suite.Time)
 	// detect shell
 	shellpath, err := shell.DetectShell(context.ShellName)
 	if err != nil {
-		return junitxml.JUnitTestSuite{}, err
+		return nil, err
 	}
 	// start a background shell, it will run until the function ends
 	shell, err := shell.StartShell(shellpath)
 	if err != nil {
-		return junitxml.JUnitTestSuite{}, fmt.Errorf("unable to start shell: %v", err)
+		return nil, fmt.Errorf("unable to start shell: %v", err)
 	}
 	defer shell.Exit()
 	// read input data
 	data, err := ReadInput([]string{inputfile})
 	if err != nil {
-		return junitxml.JUnitTestSuite{}, fmt.Errorf("unable to read input data: %v", err)
+		return nil, fmt.Errorf("unable to read input data: %v", err)
 	}
 	// run the input through the tokenizer
 	visitor := tokenizer.NewInteractionVisitor()
 	tokenizer.Tokenize(data, visitor)
-	// the test suite object for this file
-	suite := junitxml.JUnitTestSuite{}
-	suite.Name = inputfile
-	suite.AddProperty("shelldoc-version", version.Version())
 	// execute the interactions and verify the results:
 	fmt.Printf("SHELLDOC: doc-testing \"%s\" ...\n", inputfile)
 	// construct the opener and closer format strings, since they depend on verbose mode
@@ -74,25 +75,23 @@ func (context *Context) performInteractions(inputfile string) (junitxml.JUnitTes
 	closer := fmt.Sprintf("%s%%s\n", resultString)
 
 	for index, interaction := range visitor.Interactions {
-		testcase := junitxml.JUnitTestCase{
-			Name:      interaction.Cmd,
-			Classname: inputfile,
-		}
 		fmt.Printf(opener, fmt.Sprintf("(%d)", index+1), interaction.Describe())
 		if context.Verbose {
 			fmt.Printf(" --> %s\n", interaction.Cmd)
 		}
-		if err := interaction.Execute(&shell); err != nil {
+		testcase, err := context.performTestCase(interaction, shell)
+		if err != nil {
 			fmt.Printf(" --  ERROR: %v", err)
 			context.RegisterReturnCode(returnError)
 			testcase.RegisterFailure(result(returnError), interaction.Result())
 		}
+		testcase.Classname = inputfile
 		fmt.Printf(closer, interaction.Result())
 		if interaction.HasFailure() {
 			context.RegisterReturnCode(returnFailure)
 			testcase.RegisterFailure(result(returnFailure), interaction.Result())
 		}
-		suite.RegisterTestCase(testcase)
+		suite.RegisterTestCase(*testcase)
 		if interaction.HasFailure() && context.FailureStops {
 			log.Printf("Stop requested after first failed test.")
 			break
@@ -100,6 +99,13 @@ func (context *Context) performInteractions(inputfile string) (junitxml.JUnitTes
 	}
 	fmt.Printf("%s: %d tests - %d successful, %d failures (%d execution errors)\n", result(context.ReturnCode()), suite.TestCount(),
 		suite.SuccessCount(), suite.FailureCount(), suite.FailureCountForType(result(returnError)))
-	context.Suites.Suites = append(context.Suites.Suites, suite)
 	return suite, nil
+}
+
+func (context *Context) performTestCase(interaction *tokenizer.Interaction, shell shell.Shell) (*junitxml.JUnitTestCase, error) {
+	testcase := &junitxml.JUnitTestCase{
+		Name: interaction.Cmd,
+	}
+	defer junitxml.RegisterElapsedTime(time.Now(), &testcase.Time)
+	return testcase, interaction.Execute(&shell)
 }
