@@ -45,6 +45,8 @@ type Interaction struct {
 	ResultCode int
 	// Comment contains an explanation of the ResultCode after execution
 	Comment string
+	// Output contains the output of the interaction after it has been executed as individual lines
+	Output []string
 }
 
 // Describe returns a human-readable description of the interaction
@@ -62,6 +64,14 @@ func (interaction *Interaction) Describe() string {
 	}
 	result := fmt.Sprintf(format, elideString(name, elideCmdAt), expect)
 	return result
+}
+
+// DescribeFull returns a long-form description of the interaction
+func (interaction *Interaction) DescribeFull() string {
+	response := strings.Join(interaction.Response, "\n")
+	output := strings.Join(interaction.Output, "\n")
+	description := fmt.Sprintf("got: \"%s\", want: \"%s\"", response, output)
+	return description
 }
 
 // Result returns a human readable description of the result of the interaction
@@ -134,6 +144,7 @@ func (interaction *Interaction) Execute(shell *shell.Shell) error {
 	}
 	// execute the command in the shell
 	output, rc, err := shell.ExecuteCommand(interaction.Cmd)
+	interaction.Output = output
 	// compare the results
 	if err != nil {
 		interaction.ResultCode = ResultExecutionError

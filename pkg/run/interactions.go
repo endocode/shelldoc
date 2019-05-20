@@ -89,7 +89,7 @@ func (context *Context) performInteractions(inputfile string) (*junitxml.JUnitTe
 		fmt.Printf(closer, interaction.Result())
 		if interaction.HasFailure() {
 			context.RegisterReturnCode(returnFailure)
-			testcase.RegisterFailure(result(returnFailure), interaction.Result(), interaction.Describe())
+			testcase.RegisterFailure(result(returnFailure), interaction.Result(), interaction.DescribeFull())
 		}
 		suite.RegisterTestCase(*testcase)
 		if interaction.HasFailure() && context.FailureStops {
