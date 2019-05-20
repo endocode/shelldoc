@@ -32,7 +32,7 @@ const (
 type Interaction struct {
 	// Cmd contains exactly the command the shell is supposed to execute
 	Cmd string
-	// Response contains the exected response from the shell, in plain text
+	// Response contains the expected response from the shell, in plain text
 	Response []string
 	//AlternativeRegEx string
 	// Language contains the language specified if the interaction was extracted from a fenced code block
