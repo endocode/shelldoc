@@ -23,6 +23,7 @@ type JUnitTestSuite struct {
 	XMLName    xml.Name        `xml:"testsuite"`
 	Tests      int             `xml:"tests,attr"`
 	Failures   int             `xml:"failures,attr"`
+	Errors     int             `xml:"errors,attr"`
 	Time       string          `xml:"time,attr"`
 	Name       string          `xml:"name,attr"`
 	Properties []JUnitProperty `xml:"properties>property,omitempty"`
@@ -37,6 +38,7 @@ type JUnitTestCase struct {
 	Time        string            `xml:"time,attr"`
 	SkipMessage *JUnitSkipMessage `xml:"skipped,omitempty"`
 	Failure     *JUnitFailure     `xml:"failure,omitempty"`
+	Error       *JUnitError       `xml:"error,omitempty"`
 }
 
 // JUnitSkipMessage contains the reason why a testcase was skipped.
@@ -52,6 +54,13 @@ type JUnitProperty struct {
 
 // JUnitFailure contains data related to a failed test.
 type JUnitFailure struct {
+	Message  string `xml:"message,attr"`
+	Type     string `xml:"type,attr"`
+	Contents string `xml:",chardata"`
+}
+
+// JUnitError contains data related to an error when executing a test.
+type JUnitError struct {
 	Message  string `xml:"message,attr"`
 	Type     string `xml:"type,attr"`
 	Contents string `xml:",chardata"`
@@ -79,19 +88,30 @@ func (suite *JUnitTestSuite) TestCount() int {
 }
 
 // RegisterFailure registers a failure for a test case.
-func (testcase *JUnitTestCase) RegisterFailure(failuretype string, message string) {
+func (testcase *JUnitTestCase) RegisterFailure(failuretype string, message string, contents string) {
 	failure := &JUnitFailure{
-		Type:    failuretype,
-		Message: message,
+		Type:     failuretype,
+		Message:  message,
+		Contents: contents,
 	}
 	testcase.Failure = failure
+}
+
+// RegisterError registers an execution error for a test case.
+func (testcase *JUnitTestCase) RegisterError(errortype string, message string, contents string) {
+	junitError := &JUnitError{
+		Type:     errortype,
+		Message:  message,
+		Contents: contents,
+	}
+	testcase.Error = junitError
 }
 
 // SuccessCount returns the number of successfully executed test cases in the test suite.
 func (suite *JUnitTestSuite) SuccessCount() int {
 	counter := 0
 	for _, testcase := range suite.TestCases {
-		if testcase.Failure == nil {
+		if testcase.Failure == nil && testcase.Error == nil {
 			counter++
 		}
 	}
@@ -100,14 +120,20 @@ func (suite *JUnitTestSuite) SuccessCount() int {
 
 // FailureCount returns the number of executed test cases in the test suite that have failed.
 func (suite *JUnitTestSuite) FailureCount() int {
-	return suite.TestCount() - suite.SuccessCount()
-}
-
-// FailureCountForType returns the number of executed test cases in the test suite that have failed with the specified failure type.
-func (suite *JUnitTestSuite) FailureCountForType(failuretype string) int {
 	counter := 0
 	for _, testcase := range suite.TestCases {
-		if testcase.Failure != nil && testcase.Failure.Type == failuretype {
+		if testcase.Failure != nil {
+			counter++
+		}
+	}
+	return counter
+}
+
+// ErrorCount returns the number of test cases with execution errors.
+func (suite *JUnitTestSuite) ErrorCount() int {
+	counter := 0
+	for _, testcase := range suite.TestCases {
+		if testcase.Error != nil {
 			counter++
 		}
 	}
@@ -123,6 +149,8 @@ func (suite *JUnitTestSuite) RegisterTestCase(testcase JUnitTestCase) {
 	}
 	if testcase.Failure != nil {
 		suite.Failures++
+	} else if testcase.Error != nil {
+		suite.Errors++
 	}
 }
 

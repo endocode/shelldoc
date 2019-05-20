@@ -80,16 +80,16 @@ func (context *Context) performInteractions(inputfile string) (*junitxml.JUnitTe
 			fmt.Printf(" --> %s\n", interaction.Cmd)
 		}
 		testcase, err := context.performTestCase(interaction, shell)
+		testcase.Classname = inputfile // testcase is always returned, even if err is not nil
 		if err != nil {
 			fmt.Printf(" --  ERROR: %v", err)
 			context.RegisterReturnCode(returnError)
-			testcase.RegisterFailure(result(returnError), interaction.Result())
+			testcase.RegisterError(result(returnError), interaction.Result(), err.Error())
 		}
-		testcase.Classname = inputfile
 		fmt.Printf(closer, interaction.Result())
 		if interaction.HasFailure() {
 			context.RegisterReturnCode(returnFailure)
-			testcase.RegisterFailure(result(returnFailure), interaction.Result())
+			testcase.RegisterFailure(result(returnFailure), interaction.Result(), interaction.Describe())
 		}
 		suite.RegisterTestCase(*testcase)
 		if interaction.HasFailure() && context.FailureStops {
@@ -97,8 +97,8 @@ func (context *Context) performInteractions(inputfile string) (*junitxml.JUnitTe
 			break
 		}
 	}
-	fmt.Printf("%s: %d tests - %d successful, %d failures (%d execution errors)\n", result(context.ReturnCode()), suite.TestCount(),
-		suite.SuccessCount(), suite.FailureCount(), suite.FailureCountForType(result(returnError)))
+	fmt.Printf("%s: %d tests - %d successful, %d failures, %d errors\n", result(context.ReturnCode()), suite.TestCount(),
+		suite.SuccessCount(), suite.FailureCount(), suite.ErrorCount())
 	return suite, nil
 }
 
