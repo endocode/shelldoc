@@ -22,7 +22,7 @@ pipeline {
         }
         stage('Test') {
             steps {
-                sh 'cd /shelldoc && go test ./... 2>&1 | go-junit-report > testresults-gotest.xml'
+                sh 'cd /shelldoc && go test -v ./... 2>&1 | go-junit-report > testresults-gotest.xml'
             }
         }
         stage('DocTest') {
