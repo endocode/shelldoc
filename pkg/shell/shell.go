@@ -28,9 +28,10 @@ func DetectShell(selected string) (string, error) {
 	if len(selected) > 0 {
 		// accept what the user said
 		log.Printf("Using user-specified shell %s.", selected)
-	} else {
-		selected = os.Getenv("SHELL")
+	} else if selected = os.Getenv("SHELL"); len(selected) > 0 {
 		log.Printf("Using shell %s (according to $SHELL).", selected)
+	} else {
+		return "", fmt.Errorf("no shell specified and no $SHELL variable set")
 	}
 	if _, err := os.Stat(selected); os.IsNotExist(err) {
 		return "", fmt.Errorf("the selected shell does not exist: %v", err)
