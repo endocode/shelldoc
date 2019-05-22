@@ -14,6 +14,7 @@ type Context struct {
 	Verbose       bool
 	FailureStops  bool
 	XMLOutputFile string
+	ReplaceDots   bool
 	Files         []string
 	// output variables
 	Suites     junitxml.JUnitTestSuites
