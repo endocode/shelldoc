@@ -26,6 +26,7 @@ func init() {
 	runCmd.Flags().StringVarP(&context.ShellName, "shell", "s", "", "The shell to invoke (default: $SHELL)")
 	runCmd.Flags().BoolVarP(&context.FailureStops, "fail", "f", false, "Stop on the first failure")
 	runCmd.Flags().StringVarP(&context.XMLOutputFile, "xml", "x", "", "Write results to the specified output file in JUnitXML format")
+	runCmd.Flags().BoolVarP(&context.ReplaceDots, "replace-dots-in-xml-classname", "d", true, "When using filenames as classnames, replace dots with a unicode circle")
 	rootCmd.AddCommand(runCmd)
 }
 
