@@ -34,7 +34,8 @@ pipeline {
 		    sh 'rm -f "${WORKSPACE}"/testresults*.xml'
 		    sh 'cp /shelldoc/testresults*.xml "${WORKSPACE}"/'
 		    sh 'ls -la "${WORKSPACE}"/'
-                    junit '**/testresults*.xml'
+                    junit '**/testresults-gotest.xml'
+                    junit '**/testresults-shelldoc.xml'
                     cleanWs()
                 }
             }
