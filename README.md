@@ -144,7 +144,7 @@ expected response.
 
 ## Output formats and integration into CI systems
 
-By default, ``shelldoc`` produces human-readable output. Additionally, ``shelldoc`` can create a results file in the _JunitXML_ format. This format is natively understood by many continuous integration (CI) systems, like for example [Jenkins](https://jenkins.io/). The output file is specified using the ``--xml`` argument. This feature is demonstrated in [shelldoc's own CI](https://ci.endocode.com/view/QMSTR/job/QMSTR/job/shelldoc%20autotests/) and the ``Jenkinsfile`` in the repository.
+By default, ``shelldoc`` produces human-readable output. Additionally, ``shelldoc`` can create a results file in the _JunitXML_ format. This format is natively understood by many continuous integration (CI) systems, like for example [Jenkins](https://jenkins.io/). The output file is specified using the ``--xml`` argument. This feature is demonstrated in [shelldoc's own CI](https://ci.endocode.com/view/QMSTR/job/QMSTR/job/shelldoc-autotests/) and the ``Jenkinsfile`` in the repository.
 
 ## Contributing
 
