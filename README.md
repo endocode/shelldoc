@@ -1,13 +1,13 @@
 # shelldoc: Test Unix shell commands in Markdown documentation
 
+[![Build Status](https://ci.endocode.com/buildStatus/icon?job=QMSTR/shelldoc-autotests/master)](https://ci.endocode.com/job/QMSTR/job/shelldoc-autotests/job/master/)
+
 Markdown is widely used for documentation and README.md files that
 explain how to use or build some software. Such documentation often
 contains shell commands that explain how to build the software or how to
 run it. To make sure the documentation is accurate and up-to-date, it
 should be automatically tested. ``shelldoc`` tests Unix shell commands
 in Markdown files and reports the results.
-
-<center>[![Build Status](https://ci.endocode.com/buildStatus/icon?job=QMSTR/shelldoc autotests/master)](https://ci.endocode.com/job/QMSTR/job/shelldoc%20autotests/job/master/)</center>
 
 
 ## Basic usage
