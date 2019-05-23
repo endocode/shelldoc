@@ -2,14 +2,14 @@
 
 Markdown is widely used for documentation and README.md files that
 explain how to use or build some software. Such documentation often
-contains shell commands that explain how to build a software or how to
+contains shell commands that explain how to build the software or how to
 run it. To make sure the documentation is accurate and up-to-date, it
-should be automatically tested. *shelldoc* tests Unix shell commands
+should be automatically tested. ``shelldoc`` tests Unix shell commands
 in Markdown files and reports the results.
 
 ## Basic usage
 
-*shelldoc* parses a Markdown input file, detects the code blocks in
+``shelldoc`` parses a Markdown input file, detects the code blocks in
 it, executes them and compares their output with the content of the
 code block. For example, the following code block contains a command,
 indicated by either leading a _$_ or a _>_ trigger character, and an
@@ -18,9 +18,9 @@ expected response:
     $ echo Hello
     Hello
 
-Lines in code blocks that begin with a _$_ or a _>_ trigger character
-are considered commands. Lines inbetween without those lead characters
-are considered the expected response. *shelldoc* will execute these
+Lines in code blocks that begin with a ``$`` or a ``>`` _trigger character_
+are considered commands. Lines inbetween without those trigger characters
+are considered the expected response. ``shelldoc`` will execute these
 commands and return whether or not the commands succeeded and the
 output matches the specificaton:
 
@@ -34,22 +34,22 @@ SHELLDOC: doc-testing "go/src/github.com/endocode/shelldoc/README.md" ...
 SUCCESS: 4 tests (4 successful, 0 failures, 0 execution errors)
 ~~~
 
-Note that this example is not executed as a test by *shelldoc*, since
-it does not start with a trigger character. Trying to do so would
+Note that this example is not executed as a test by ``shelldoc``, since
+it does not start with a trigger character. Doing so would
 cause an infinite recursion when evaluating the README.md using
-*shelldoc*. Try it :-) The percent symbol is commonly used as a shell
+``shelldoc``. Try it :-) The percent symbol is commonly used as a shell
 prompt next to  _$_ or a _>_. It can be used in documentation as a
-prompt indicator without triggering a *shelldoc* test.
+prompt indicator without triggering a ``shelldoc`` test.
 
 ## Installation
 
-The usual way to install *shelldoc* is using `go get`:
+The usual way to install ``shelldoc`` is using `go get`:
 
 	$ go get -u github.com/endocode/shelldoc/cmd/shelldoc
 	...
 
 Executing documentation may have side effects. For example, running
-this `go get` command just installed the latest version of *shelldoc*
+this `go get` command just installed the latest version of ``shelldoc``
 in your system. Containers or VMs can be used to isolate such side
 effects.
 
@@ -60,8 +60,8 @@ tests. A test succeeds if it returns the expected exit code, and the
 output of the command matches the response specified in the code
 block.
 
-*shelldoc* supports both simple and fenced code blocks. An ellipsis,
-as used in the description on how to install *shelldoc* above,
+``shelldoc`` supports both simple and fenced code blocks. An ellipsis,
+as used in the description on how to install ``shelldoc`` above,
 indicates that all output is accepted from this point forward as long
 as the command exits with the expected return code (zero, by default).
 
@@ -83,10 +83,10 @@ interactions:
 	$ echo $GREETING
 	Hello World
 
-*shelldoc* uses
+``shelldoc`` uses
 the
 [Blackfriday Markdown processor](https://github.com/russross/blackfriday) to
-parse Markdown files, and the [pflag](https://github.com/spf13/pflag)
+parse Markdown files, and the [Cobra](https://github.com/spf13/cobra)
 package to parse the command line arguments.
 
 ## Options
@@ -101,7 +101,7 @@ expected to return a different exit code than zero. Some commands
 return exit codes that are unknown up-front. Both options can be
 handled by specifying tests in fenced code blocks. Fenced code blocks
 may have an info string after the opening characters. This info string
-is usually used to specify the language of the following code. After
+is typically used to specify the language of the listed code. After
 the language specifier however, other information may
 follow. `shelldoc` uses this opportunity to allow the user to specify
 options about the test. These options are:
@@ -119,13 +119,16 @@ Hello
 
 The _shelldocwhatever_ options tells `shelldoc` that the exit code of
 the following command does not matter. If any expected response is
-specified, it will still be evaluated.
+specified, it will still be evaluated. The test succeeds if the expected
+response is produced, no matter the exit code of the command. 
+
+An expected exit code is specified using the _shelldocexitcode_ option:
 
     ```shell {shelldocexitcode=2}
     % (exit 2)
     ```
 
-This executes the test, for tests:
+This means the test is considered successful if it produces no response and returns 2.
 
 ```shell {shelldocexitcode=2}
 > (exit 2)
@@ -136,30 +139,34 @@ expected. The test fails if the exit code of the command does not
 match the specified one, or if the response does not match the
 expected response.
 
+## Output formats and integration into CI systems
+
+By default, ``shelldoc`` produces human-readable output. Additionally, ``shelldoc`` can create a results file in the _JunitXML_ format. This format is natively understood by many continuous integration (CI) systems, like for example [Jenkins](https://jenkins.io/). The output file is specified using the ``--xml`` argument. This feature is demonstrated in [shelldoc's own CI](https://ci.endocode.com/view/QMSTR/job/QMSTR/job/shelldoc%20autotests/) and the ``Jenkinsfile`` in the repository.
+
 ## Contributing
 
 *shelldoc*
 is
 [free and open source software](https://en.wikipedia.org/wiki/Free_and_open-source_software). Everybody
 is invited to use, study, modify and redistribute it. To contribute to
-*shelldoc*, feel free to fork it and submit pull requests, or to
+``shelldoc``, feel free to fork it and submit pull requests, or to
 submit issues in
 the
-[*shelldoc* issue tracker](https://github.com/endocode/shelldoc/issues). All
+[``shelldoc`` issue tracker](https://github.com/endocode/shelldoc/issues). All
 contributions are welcome.
 
 To report a bug, the best way is to submit a Markdown file and a
 description of how the Markdown file should be interpreted, and how
-*shelldoc* interprets it.
+``shelldoc`` interprets it.
 
 ## Authors and license
 
-*shelldoc* was developed
+``shelldoc`` was developed
 by [Mirko Boehm](http://www.creative-destruction.org). Commercial support,
 if necessary, is provided
 by [Endocode](https://endocode.com/).
 
-The command line programs of *shelldoc* are located in the `cmd/`
+The command line programs of ``shelldoc`` are located in the `cmd/`
 subdirectory and licensed under the terms of the GPL, version 3. The
 reusable components are located in the `pkg/` subdirectory and
 licensed under the terms of the LGPL version 3. Unit test and example
