@@ -1,5 +1,5 @@
 FROM golang:1.12
-LABEL	maintainer="Mirko Boehm <mboehm@openinventionnetwork.com>"
+LABEL	maintainer="Mirko Boehm <mirko@endocode.com>"
 ENV	LC_ALL C.UTF-8
 ENV	LANG C.UTF-8
 RUN	apt-get update

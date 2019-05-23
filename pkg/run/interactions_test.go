@@ -24,12 +24,7 @@ func TestMain(m *testing.M) {
 }
 func TestHelloWorld(t *testing.T) {
 	context := Context{
-		// ShellName:    "",
 		Verbose: true,
-		// FailureStops: false,
-		// XMLOutputFile: "",
-		// Files:         []string{},
-		// Suites: junitxml.JUnitTestSuites{},
 	}
 	testsuite, err := context.performInteractions("../../pkg/tokenizer/samples/helloworld.md")
 	require.NoError(t, err, "The HelloWorld example should execute without errors.")

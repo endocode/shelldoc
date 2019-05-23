@@ -7,7 +7,7 @@ import (
 	"github.com/endocode/shelldoc/pkg/junitxml"
 )
 
-// Context contains the context of an exewcution of the run subcommand.
+// Context contains the context of an execution of the run subcommand.
 type Context struct {
 	// input (configuration) variables
 	ShellName     string
