@@ -7,6 +7,9 @@ run it. To make sure the documentation is accurate and up-to-date, it
 should be automatically tested. ``shelldoc`` tests Unix shell commands
 in Markdown files and reports the results.
 
+<center>[![Build Status](https://ci.endocode.com/buildStatus/icon?job=QMSTR/shelldoc autotests/master)](https://ci.endocode.com/job/QMSTR/job/shelldoc%20autotests/job/master/)</center>
+
+
 ## Basic usage
 
 ``shelldoc`` parses a Markdown input file, detects the code blocks in
