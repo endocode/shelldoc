@@ -1,4 +1,4 @@
-all:	VERSION build
+all:	VERSION selftest
 
 VERSION:
 	git describe  --always --tags --abbrev=7 HEAD > VERSION
@@ -10,3 +10,8 @@ build				: VERSION
 
 test:
 	go test ./...
+
+selftest			: build
+	@echo "Running self-test of README.md and evaluating XML output with xmllint..." && \
+		./cmd/shelldoc/shelldoc run -x results.xml README.md && \
+		xmllint --noout --schema pkg/junitxml/jenkins-junit.xsd results.xml
